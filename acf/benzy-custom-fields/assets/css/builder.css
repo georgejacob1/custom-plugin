@@ -1,0 +1,154 @@
+#bcf-builder .bcf-b-columns,
+#bcf-builder .bcf-b-head {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+#bcf-builder .bcf-b-columns {
+	padding: 8px 12px 8px 44px;
+	font-weight: 600;
+	color: #50575e;
+	border-bottom: 1px solid #c3c4c7;
+}
+
+#bcf-builder .bcf-b-col-label {
+	flex: 2;
+	min-width: 0;
+}
+
+#bcf-builder .bcf-b-col-name {
+	flex: 2;
+	min-width: 0;
+}
+
+#bcf-builder .bcf-b-col-type {
+	flex: 1;
+	min-width: 0;
+}
+
+#bcf-builder .bcf-b-list {
+	margin: 0;
+}
+
+#bcf-builder .bcf-b-field {
+	margin: 0;
+	border-bottom: 1px solid #dcdcde;
+	background: #fff;
+}
+
+#bcf-builder .bcf-b-head {
+	padding: 10px 12px;
+}
+
+#bcf-builder .bcf-b-head:hover {
+	background: #f6f7f7;
+}
+
+#bcf-builder .bcf-b-handle {
+	color: #8c8f94;
+	cursor: move;
+}
+
+#bcf-builder .bcf-b-label {
+	cursor: pointer;
+	color: #2271b1;
+}
+
+#bcf-builder .bcf-b-actions {
+	font-size: 12px;
+	white-space: nowrap;
+	visibility: hidden;
+}
+
+#bcf-builder .bcf-b-head:hover .bcf-b-actions,
+#bcf-builder .bcf-b-field.is-open > .bcf-b-head .bcf-b-actions {
+	visibility: visible;
+}
+
+#bcf-builder .bcf-b-delete {
+	color: #b32d2e;
+}
+
+#bcf-builder .bcf-b-body {
+	display: none;
+	padding: 0 12px 12px 44px;
+	background: #f6f7f7;
+	border-top: 1px solid #dcdcde;
+}
+
+#bcf-builder .bcf-b-field.is-open > .bcf-b-body {
+	display: block;
+}
+
+#bcf-builder .bcf-b-field.is-open > .bcf-b-head {
+	background: #2271b1;
+}
+
+#bcf-builder .bcf-b-field.is-open > .bcf-b-head,
+#bcf-builder .bcf-b-field.is-open > .bcf-b-head a,
+#bcf-builder .bcf-b-field.is-open > .bcf-b-head .bcf-b-label,
+#bcf-builder .bcf-b-field.is-open > .bcf-b-head .bcf-b-handle {
+	color: #fff;
+}
+
+#bcf-builder .bcf-b-field.is-open > .bcf-b-head code {
+	background: rgba(255, 255, 255, 0.2);
+	color: #fff;
+}
+
+#bcf-builder .bcf-b-settings th {
+	width: 140px;
+	padding: 12px 10px 12px 0;
+}
+
+#bcf-builder .bcf-b-settings td {
+	padding: 10px 0;
+}
+
+#bcf-builder .bcf-b-sub {
+	border: 1px solid #c3c4c7;
+	background: #fff;
+}
+
+#bcf-builder .bcf-b-sub > .bcf-b-list:empty {
+	min-height: 8px;
+}
+
+#bcf-builder .bcf-b-sub > .button {
+	margin: 10px;
+}
+
+#bcf-builder .bcf-b-placeholder {
+	background: #f0f6fc;
+	border: 1px dashed #2271b1;
+}
+
+#bcf-builder .bcf-b-empty {
+	padding: 16px 12px;
+	color: #646970;
+	font-style: italic;
+}
+
+.bcf-location-table .bcf-inline-check {
+	display: inline-block;
+	margin: 0 18px 8px 0;
+}
+
+@media (max-width: 782px) {
+	#bcf-builder .bcf-b-columns {
+		display: none;
+	}
+
+	#bcf-builder .bcf-b-head {
+		flex-wrap: wrap;
+	}
+
+	#bcf-builder .bcf-b-actions {
+		visibility: visible;
+	}
+
+	#bcf-builder .bcf-b-body {
+		padding-left: 12px;
+	}
+}
