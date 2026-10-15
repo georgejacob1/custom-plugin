@@ -1,0 +1,154 @@
+#fcf-builder .fcf-b-columns,
+#fcf-builder .fcf-b-head {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+#fcf-builder .fcf-b-columns {
+	padding: 8px 12px 8px 44px;
+	font-weight: 600;
+	color: #50575e;
+	border-bottom: 1px solid #c3c4c7;
+}
+
+#fcf-builder .fcf-b-col-label {
+	flex: 2;
+	min-width: 0;
+}
+
+#fcf-builder .fcf-b-col-name {
+	flex: 2;
+	min-width: 0;
+}
+
+#fcf-builder .fcf-b-col-type {
+	flex: 1;
+	min-width: 0;
+}
+
+#fcf-builder .fcf-b-list {
+	margin: 0;
+}
+
+#fcf-builder .fcf-b-field {
+	margin: 0;
+	border-bottom: 1px solid #dcdcde;
+	background: #fff;
+}
+
+#fcf-builder .fcf-b-head {
+	padding: 10px 12px;
+}
+
+#fcf-builder .fcf-b-head:hover {
+	background: #f6f7f7;
+}
+
+#fcf-builder .fcf-b-handle {
+	color: #8c8f94;
+	cursor: move;
+}
+
+#fcf-builder .fcf-b-label {
+	cursor: pointer;
+	color: #2271b1;
+}
+
+#fcf-builder .fcf-b-actions {
+	font-size: 12px;
+	white-space: nowrap;
+	visibility: hidden;
+}
+
+#fcf-builder .fcf-b-head:hover .fcf-b-actions,
+#fcf-builder .fcf-b-field.is-open > .fcf-b-head .fcf-b-actions {
+	visibility: visible;
+}
+
+#fcf-builder .fcf-b-delete {
+	color: #b32d2e;
+}
+
+#fcf-builder .fcf-b-body {
+	display: none;
+	padding: 0 12px 12px 44px;
+	background: #f6f7f7;
+	border-top: 1px solid #dcdcde;
+}
+
+#fcf-builder .fcf-b-field.is-open > .fcf-b-body {
+	display: block;
+}
+
+#fcf-builder .fcf-b-field.is-open > .fcf-b-head {
+	background: #2271b1;
+}
+
+#fcf-builder .fcf-b-field.is-open > .fcf-b-head,
+#fcf-builder .fcf-b-field.is-open > .fcf-b-head a,
+#fcf-builder .fcf-b-field.is-open > .fcf-b-head .fcf-b-label,
+#fcf-builder .fcf-b-field.is-open > .fcf-b-head .fcf-b-handle {
+	color: #fff;
+}
+
+#fcf-builder .fcf-b-field.is-open > .fcf-b-head code {
+	background: rgba(255, 255, 255, 0.2);
+	color: #fff;
+}
+
+#fcf-builder .fcf-b-settings th {
+	width: 140px;
+	padding: 12px 10px 12px 0;
+}
+
+#fcf-builder .fcf-b-settings td {
+	padding: 10px 0;
+}
+
+#fcf-builder .fcf-b-sub {
+	border: 1px solid #c3c4c7;
+	background: #fff;
+}
+
+#fcf-builder .fcf-b-sub > .fcf-b-list:empty {
+	min-height: 8px;
+}
+
+#fcf-builder .fcf-b-sub > .button {
+	margin: 10px;
+}
+
+#fcf-builder .fcf-b-placeholder {
+	background: #f0f6fc;
+	border: 1px dashed #2271b1;
+}
+
+#fcf-builder .fcf-b-empty {
+	padding: 16px 12px;
+	color: #646970;
+	font-style: italic;
+}
+
+.fcf-location-table .fcf-inline-check {
+	display: inline-block;
+	margin: 0 18px 8px 0;
+}
+
+@media (max-width: 782px) {
+	#fcf-builder .fcf-b-columns {
+		display: none;
+	}
+
+	#fcf-builder .fcf-b-head {
+		flex-wrap: wrap;
+	}
+
+	#fcf-builder .fcf-b-actions {
+		visibility: visible;
+	}
+
+	#fcf-builder .fcf-b-body {
+		padding-left: 12px;
+	}
+}

@@ -1,4 +1,4 @@
-# Benzy Custom Fields
+# Functional Custom Fields
 
 Lightweight custom fields for WordPress. Build field groups in wp-admin and attach them to pages, posts or any custom post type.
 
@@ -8,8 +8,8 @@ Text, Text Area, WYSIWYG Editor, Number, Email, URL, Select, Checkbox, Radio But
 
 ## Install
 
-1. Upload the `benzy-custom-fields` folder to `wp-content/plugins/` (or upload the zip via **Plugins → Add New → Upload Plugin**).
-2. Activate **Benzy Custom Fields**.
+1. Upload the `functional-custom-fields` folder to `wp-content/plugins/` (or upload the zip via **Plugins → Add New → Upload Plugin**).
+2. Activate **Functional Custom Fields**.
 
 ## Create fields
 
@@ -25,53 +25,53 @@ Values are stored as normal post meta using the field **name** as the meta key.
 
 ```php
 // Text / textarea / number / select…
-echo esc_html( bcf_get_field( 'hero_title' ) );
+echo esc_html( fcf_get_field( 'hero_title' ) );
 
 // Echo with sensible HTML per type (WYSIWYG HTML, image tag, file link…)
-bcf_the_field( 'intro' );
+fcf_the_field( 'intro' );
 
 // Image: array with ID, url, width, height, alt, title, caption, sizes
-$img = bcf_get_field( 'hero_image' );
+$img = fcf_get_field( 'hero_image' );
 if ( $img ) {
 	echo wp_get_attachment_image( $img['ID'], 'large' );
 }
 
 // Gallery: array of image arrays
-foreach ( bcf_get_field( 'photos' ) as $photo ) {
+foreach ( fcf_get_field( 'photos' ) as $photo ) {
 	echo '<img src="' . esc_url( $photo['sizes']['medium'] ?? $photo['url'] ) . '" alt="' . esc_attr( $photo['alt'] ) . '">';
 }
 
 // File: array with ID, url, filename, title, mime_type, filesize
-$file = bcf_get_field( 'brochure' );
+$file = fcf_get_field( 'brochure' );
 
 // Repeater, option 1: plain array of rows
-foreach ( bcf_get_field( 'slides' ) as $slide ) {
+foreach ( fcf_get_field( 'slides' ) as $slide ) {
 	echo esc_html( $slide['caption'] );
 }
 
 // Repeater, option 2: loop helpers (nested repeaters work too)
-if ( bcf_have_rows( 'slides' ) ) {
-	while ( bcf_have_rows( 'slides' ) ) {
-		bcf_the_row();
-		bcf_the_sub_field( 'caption' );
-		$image = bcf_get_sub_field( 'image' );
+if ( fcf_have_rows( 'slides' ) ) {
+	while ( fcf_have_rows( 'slides' ) ) {
+		fcf_the_row();
+		fcf_the_sub_field( 'caption' );
+		$image = fcf_get_sub_field( 'image' );
 	}
 }
 
 // Other post / raw value
-bcf_get_field( 'hero_title', 42 );
-bcf_get_field( 'hero_image', null, false ); // attachment ID
+fcf_get_field( 'hero_title', 42 );
+fcf_get_field( 'hero_image', null, false ); // attachment ID
 
 // All fields for the current post
-$all = bcf_get_fields();
+$all = fcf_get_fields();
 ```
 
 Shortcode (in content or widgets):
 
 ```
-[bcf field="hero_title"]
-[bcf field="hero_image" size="medium"]
-[bcf field="hero_title" post_id="42"]
+[fcf field="hero_title"]
+[fcf field="hero_image" size="medium"]
+[fcf field="hero_title" post_id="42"]
 ```
 
 ## Notes

@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
  * @param int|WP_Post|null $post_id Post.
  * @return int
  */
-function bcf_resolve_post_id( $post_id = null ) {
+function fcf_resolve_post_id( $post_id = null ) {
 	if ( $post_id instanceof WP_Post ) {
 		return $post_id->ID;
 	}
@@ -29,13 +29,13 @@ function bcf_resolve_post_id( $post_id = null ) {
  * @param bool     $format  False returns the raw stored value.
  * @return mixed
  */
-function bcf_get_field( $name, $post_id = null, $format = true ) {
-	$post_id = bcf_resolve_post_id( $post_id );
+function fcf_get_field( $name, $post_id = null, $format = true ) {
+	$post_id = fcf_resolve_post_id( $post_id );
 	if ( ! $post_id ) {
 		return null;
 	}
 
-	$field = BCF_Field_Groups::find_field( $name, $post_id );
+	$field = FCF_Field_Groups::find_field( $name, $post_id );
 	$value = metadata_exists( 'post', $post_id, $name ) ? get_post_meta( $post_id, $name, true ) : null;
 
 	if ( null === $value && $field && 'repeater' !== $field['type'] && '' !== $field['default_value'] ) {
@@ -46,7 +46,7 @@ function bcf_get_field( $name, $post_id = null, $format = true ) {
 		return $value;
 	}
 
-	return BCF_Fields::format_value( $field, $value );
+	return FCF_Fields::format_value( $field, $value );
 }
 
 /**
@@ -55,8 +55,8 @@ function bcf_get_field( $name, $post_id = null, $format = true ) {
  * @param int|null $post_id Post ID.
  * @return array name => value
  */
-function bcf_get_fields( $post_id = null ) {
-	$post_id = bcf_resolve_post_id( $post_id );
+function fcf_get_fields( $post_id = null ) {
+	$post_id = fcf_resolve_post_id( $post_id );
 	$post    = get_post( $post_id );
 	$values  = array();
 
@@ -64,9 +64,9 @@ function bcf_get_fields( $post_id = null ) {
 		return $values;
 	}
 
-	foreach ( BCF_Field_Groups::groups_for_post( $post, false ) as $group ) {
+	foreach ( FCF_Field_Groups::groups_for_post( $post, false ) as $group ) {
 		foreach ( $group['fields'] as $field ) {
-			$values[ $field['name'] ] = bcf_get_field( $field['name'], $post_id );
+			$values[ $field['name'] ] = fcf_get_field( $field['name'], $post_id );
 		}
 	}
 
@@ -79,8 +79,8 @@ function bcf_get_fields( $post_id = null ) {
  * @param string   $name    Field name.
  * @param int|null $post_id Post ID.
  */
-function bcf_the_field( $name, $post_id = null ) {
-	echo bcf_field_html( $name, $post_id ); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in bcf_field_html().
+function fcf_the_field( $name, $post_id = null ) {
+	echo fcf_field_html( $name, $post_id ); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped in fcf_field_html().
 }
 
 /**
@@ -91,10 +91,10 @@ function bcf_the_field( $name, $post_id = null ) {
  * @param string   $size    Image size for image / gallery fields.
  * @return string
  */
-function bcf_field_html( $name, $post_id = null, $size = 'large' ) {
-	$post_id = bcf_resolve_post_id( $post_id );
-	$field   = BCF_Field_Groups::find_field( $name, $post_id );
-	$value   = bcf_get_field( $name, $post_id );
+function fcf_field_html( $name, $post_id = null, $size = 'large' ) {
+	$post_id = fcf_resolve_post_id( $post_id );
+	$field   = FCF_Field_Groups::find_field( $name, $post_id );
+	$value   = fcf_get_field( $name, $post_id );
 	$type    = $field ? $field['type'] : 'text';
 
 	switch ( $type ) {
@@ -126,7 +126,7 @@ function bcf_field_html( $name, $post_id = null, $size = 'large' ) {
 		case 'select':
 		case 'radio':
 		case 'checkbox':
-			$choices = BCF_Fields::parse_choices( $field['choices'] );
+			$choices = FCF_Fields::parse_choices( $field['choices'] );
 			$labels  = array();
 			foreach ( (array) $value as $v ) {
 				if ( '' !== (string) $v ) {
@@ -143,12 +143,12 @@ function bcf_field_html( $name, $post_id = null, $size = 'large' ) {
 }
 
 /**
- * Shortcode: [bcf field="name" post_id="123" size="large"]
+ * Shortcode: [fcf field="name" post_id="123" size="large"]
  *
  * @param array $atts Attributes.
  * @return string
  */
-function bcf_shortcode( $atts ) {
+function fcf_shortcode( $atts ) {
 	$atts = shortcode_atts(
 		array(
 			'field'   => '',
@@ -156,22 +156,22 @@ function bcf_shortcode( $atts ) {
 			'size'    => 'large',
 		),
 		$atts,
-		'bcf'
+		'fcf'
 	);
 
 	if ( '' === $atts['field'] ) {
 		return '';
 	}
 
-	return bcf_field_html( sanitize_key( $atts['field'] ), $atts['post_id'] ? absint( $atts['post_id'] ) : null, sanitize_key( $atts['size'] ) );
+	return fcf_field_html( sanitize_key( $atts['field'] ), $atts['post_id'] ? absint( $atts['post_id'] ) : null, sanitize_key( $atts['size'] ) );
 }
 
 /*
  * Repeater loop helpers:
  *
- * if ( bcf_have_rows( 'slides' ) ) :
- *     while ( bcf_have_rows( 'slides' ) ) : bcf_the_row();
- *         bcf_the_sub_field( 'title' );
+ * if ( fcf_have_rows( 'slides' ) ) :
+ *     while ( fcf_have_rows( 'slides' ) ) : fcf_the_row();
+ *         fcf_the_sub_field( 'title' );
  *     endwhile;
  * endif;
  */
@@ -183,21 +183,21 @@ function bcf_shortcode( $atts ) {
  * @param int|null $post_id Post ID.
  * @return bool
  */
-function bcf_have_rows( $name, $post_id = null ) {
-	global $bcf_rows_stack;
-	if ( ! is_array( $bcf_rows_stack ) ) {
-		$bcf_rows_stack = array();
+function fcf_have_rows( $name, $post_id = null ) {
+	global $fcf_rows_stack;
+	if ( ! is_array( $fcf_rows_stack ) ) {
+		$fcf_rows_stack = array();
 	}
 
-	$top     = end( $bcf_rows_stack );
-	$post_id = bcf_resolve_post_id( $post_id );
+	$top     = end( $fcf_rows_stack );
+	$post_id = fcf_resolve_post_id( $post_id );
 
 	// Continue the loop that is already running for this field.
 	if ( $top && $top['name'] === $name && $top['post_id'] === $post_id ) {
 		if ( $top['index'] + 1 < count( $top['rows'] ) ) {
 			return true;
 		}
-		array_pop( $bcf_rows_stack );
+		array_pop( $fcf_rows_stack );
 		return false;
 	}
 
@@ -205,14 +205,14 @@ function bcf_have_rows( $name, $post_id = null ) {
 	if ( $top && $top['index'] >= 0 && isset( $top['rows'][ $top['index'] ][ $name ] ) ) {
 		$rows = $top['rows'][ $top['index'] ][ $name ];
 	} else {
-		$rows = bcf_get_field( $name, $post_id );
+		$rows = fcf_get_field( $name, $post_id );
 	}
 
 	if ( ! is_array( $rows ) || ! $rows ) {
 		return false;
 	}
 
-	$bcf_rows_stack[] = array(
+	$fcf_rows_stack[] = array(
 		'name'    => $name,
 		'post_id' => $post_id,
 		'rows'    => array_values( $rows ),
@@ -227,14 +227,14 @@ function bcf_have_rows( $name, $post_id = null ) {
  *
  * @return array|false The row.
  */
-function bcf_the_row() {
-	global $bcf_rows_stack;
-	if ( empty( $bcf_rows_stack ) ) {
+function fcf_the_row() {
+	global $fcf_rows_stack;
+	if ( empty( $fcf_rows_stack ) ) {
 		return false;
 	}
-	$i = count( $bcf_rows_stack ) - 1;
-	$bcf_rows_stack[ $i ]['index']++;
-	$row = $bcf_rows_stack[ $i ]['rows'][ $bcf_rows_stack[ $i ]['index'] ] ?? false;
+	$i = count( $fcf_rows_stack ) - 1;
+	$fcf_rows_stack[ $i ]['index']++;
+	$row = $fcf_rows_stack[ $i ]['rows'][ $fcf_rows_stack[ $i ]['index'] ] ?? false;
 	return $row;
 }
 
@@ -244,12 +244,12 @@ function bcf_the_row() {
  * @param string $name Sub field name.
  * @return mixed
  */
-function bcf_get_sub_field( $name ) {
-	global $bcf_rows_stack;
-	if ( empty( $bcf_rows_stack ) ) {
+function fcf_get_sub_field( $name ) {
+	global $fcf_rows_stack;
+	if ( empty( $fcf_rows_stack ) ) {
 		return null;
 	}
-	$top = end( $bcf_rows_stack );
+	$top = end( $fcf_rows_stack );
 	return $top['rows'][ $top['index'] ][ $name ] ?? null;
 }
 
@@ -258,8 +258,8 @@ function bcf_get_sub_field( $name ) {
  *
  * @param string $name Sub field name.
  */
-function bcf_the_sub_field( $name ) {
-	$value = bcf_get_sub_field( $name );
+function fcf_the_sub_field( $name ) {
+	$value = fcf_get_sub_field( $name );
 	if ( is_array( $value ) && isset( $value['ID'], $value['sizes'] ) ) {
 		echo wp_get_attachment_image( $value['ID'], 'large' );
 	} elseif ( is_array( $value ) && isset( $value['url'] ) ) {

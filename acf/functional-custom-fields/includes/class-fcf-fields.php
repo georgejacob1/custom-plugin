@@ -5,7 +5,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class BCF_Fields {
+class FCF_Fields {
 
 	/**
 	 * Available field types.
@@ -14,22 +14,22 @@ class BCF_Fields {
 	 */
 	public static function types() {
 		return array(
-			'text'       => __( 'Text', 'benzy-custom-fields' ),
-			'textarea'   => __( 'Text Area', 'benzy-custom-fields' ),
-			'wysiwyg'    => __( 'WYSIWYG Editor', 'benzy-custom-fields' ),
-			'number'     => __( 'Number', 'benzy-custom-fields' ),
-			'email'      => __( 'Email', 'benzy-custom-fields' ),
-			'url'        => __( 'URL', 'benzy-custom-fields' ),
-			'select'     => __( 'Select', 'benzy-custom-fields' ),
-			'checkbox'   => __( 'Checkbox', 'benzy-custom-fields' ),
-			'radio'      => __( 'Radio Buttons', 'benzy-custom-fields' ),
-			'true_false' => __( 'True / False', 'benzy-custom-fields' ),
-			'date'       => __( 'Date', 'benzy-custom-fields' ),
-			'color'      => __( 'Color Picker', 'benzy-custom-fields' ),
-			'image'      => __( 'Image', 'benzy-custom-fields' ),
-			'gallery'    => __( 'Gallery', 'benzy-custom-fields' ),
-			'file'       => __( 'File', 'benzy-custom-fields' ),
-			'repeater'   => __( 'Repeater', 'benzy-custom-fields' ),
+			'text'       => __( 'Text', 'functional-custom-fields' ),
+			'textarea'   => __( 'Text Area', 'functional-custom-fields' ),
+			'wysiwyg'    => __( 'WYSIWYG Editor', 'functional-custom-fields' ),
+			'number'     => __( 'Number', 'functional-custom-fields' ),
+			'email'      => __( 'Email', 'functional-custom-fields' ),
+			'url'        => __( 'URL', 'functional-custom-fields' ),
+			'select'     => __( 'Select', 'functional-custom-fields' ),
+			'checkbox'   => __( 'Checkbox', 'functional-custom-fields' ),
+			'radio'      => __( 'Radio Buttons', 'functional-custom-fields' ),
+			'true_false' => __( 'True / False', 'functional-custom-fields' ),
+			'date'       => __( 'Date', 'functional-custom-fields' ),
+			'color'      => __( 'Color Picker', 'functional-custom-fields' ),
+			'image'      => __( 'Image', 'functional-custom-fields' ),
+			'gallery'    => __( 'Gallery', 'functional-custom-fields' ),
+			'file'       => __( 'File', 'functional-custom-fields' ),
+			'repeater'   => __( 'Repeater', 'functional-custom-fields' ),
 		);
 	}
 
@@ -148,22 +148,22 @@ class BCF_Fields {
 	 * @param string $id    Input id attribute.
 	 */
 	public static function render_field( $field, $value, $name, $id ) {
-		$classes = 'bcf-field bcf-type-' . $field['type'];
+		$classes = 'fcf-field fcf-type-' . $field['type'];
 		if ( ! empty( $field['required'] ) ) {
 			$classes .= ' is-required';
 		}
 
 		printf( '<div class="%s" data-name="%s">', esc_attr( $classes ), esc_attr( $field['name'] ) );
 		printf(
-			'<label class="bcf-label" for="%s">%s%s</label>',
+			'<label class="fcf-label" for="%s">%s%s</label>',
 			esc_attr( $id ),
 			esc_html( $field['label'] ),
-			! empty( $field['required'] ) ? ' <span class="bcf-required">*</span>' : ''
+			! empty( $field['required'] ) ? ' <span class="fcf-required">*</span>' : ''
 		);
 		if ( '' !== $field['instructions'] ) {
-			printf( '<p class="description bcf-instructions">%s</p>', nl2br( esc_html( $field['instructions'] ) ) );
+			printf( '<p class="description fcf-instructions">%s</p>', nl2br( esc_html( $field['instructions'] ) ) );
 		}
-		echo '<div class="bcf-input">';
+		echo '<div class="fcf-input">';
 		self::render_input( $field, $value, $name, $id );
 		echo '</div></div>';
 	}
@@ -178,7 +178,7 @@ class BCF_Fields {
 			$value = $field['default_value'];
 		}
 
-		$required = ! empty( $field['required'] ) ? ' data-bcf-required="1"' : '';
+		$required = ! empty( $field['required'] ) ? ' data-fcf-required="1"' : '';
 
 		switch ( $type ) {
 			case 'text':
@@ -218,7 +218,7 @@ class BCF_Fields {
 			case 'wysiwyg':
 				// Initialised as a full editor by fields.js (works inside repeaters too).
 				printf(
-					'<textarea class="bcf-wysiwyg" rows="10" id="%s" name="%s">%s</textarea>',
+					'<textarea class="fcf-wysiwyg" rows="10" id="%s" name="%s">%s</textarea>',
 					esc_attr( $id ),
 					esc_attr( $name ),
 					esc_textarea( is_scalar( $value ) ? $value : '' )
@@ -227,7 +227,7 @@ class BCF_Fields {
 
 			case 'select':
 				printf( '<select class="widefat" id="%s" name="%s"%s>', esc_attr( $id ), esc_attr( $name ), $required );
-				printf( '<option value="">%s</option>', esc_html__( '— Select —', 'benzy-custom-fields' ) );
+				printf( '<option value="">%s</option>', esc_html__( '— Select —', 'functional-custom-fields' ) );
 				foreach ( self::parse_choices( $field['choices'] ) as $v => $label ) {
 					printf( '<option value="%s"%s>%s</option>', esc_attr( $v ), selected( (string) $value, (string) $v, false ), esc_html( $label ) );
 				}
@@ -235,7 +235,7 @@ class BCF_Fields {
 				break;
 
 			case 'radio':
-				echo '<ul class="bcf-choice-list">';
+				echo '<ul class="fcf-choice-list">';
 				$i = 0;
 				foreach ( self::parse_choices( $field['choices'] ) as $v => $label ) {
 					printf(
@@ -255,7 +255,7 @@ class BCF_Fields {
 				$values = is_array( $value ) ? array_map( 'strval', $value ) : array_filter( array_map( 'trim', explode( ',', (string) $value ) ), 'strlen' );
 				// Empty hidden input lets "nothing checked" be saved.
 				printf( '<input type="hidden" name="%s" value="" />', esc_attr( $name ) );
-				echo '<ul class="bcf-choice-list">';
+				echo '<ul class="fcf-choice-list">';
 				$i = 0;
 				foreach ( self::parse_choices( $field['choices'] ) as $v => $label ) {
 					printf(
@@ -274,17 +274,17 @@ class BCF_Fields {
 			case 'true_false':
 				printf( '<input type="hidden" name="%s" value="0" />', esc_attr( $name ) );
 				printf(
-					'<label class="bcf-switch"><input type="checkbox" id="%s" name="%s" value="1"%s /> %s</label>',
+					'<label class="fcf-switch"><input type="checkbox" id="%s" name="%s" value="1"%s /> %s</label>',
 					esc_attr( $id ),
 					esc_attr( $name ),
 					checked( ! empty( $value ), true, false ),
-					esc_html( '' !== $field['placeholder'] ? $field['placeholder'] : __( 'Yes', 'benzy-custom-fields' ) )
+					esc_html( '' !== $field['placeholder'] ? $field['placeholder'] : __( 'Yes', 'functional-custom-fields' ) )
 				);
 				break;
 
 			case 'color':
 				printf(
-					'<input type="text" class="bcf-color" id="%s" name="%s" value="%s" data-default-color="%s" />',
+					'<input type="text" class="fcf-color" id="%s" name="%s" value="%s" data-default-color="%s" />',
 					esc_attr( $id ),
 					esc_attr( $name ),
 					esc_attr( is_scalar( $value ) ? $value : '' ),
@@ -295,13 +295,13 @@ class BCF_Fields {
 			case 'image':
 				$img_id  = absint( $value );
 				$preview = $img_id ? wp_get_attachment_image( $img_id, 'medium' ) : '';
-				printf( '<div class="bcf-media bcf-image%s">', $preview ? ' has-value' : '' );
-				printf( '<input type="hidden" class="bcf-value" id="%s" name="%s" value="%s" />', esc_attr( $id ), esc_attr( $name ), $img_id ? esc_attr( $img_id ) : '' );
-				echo '<div class="bcf-image-preview">' . $preview . '</div>'; // wp_get_attachment_image() output is escaped.
+				printf( '<div class="fcf-media fcf-image%s">', $preview ? ' has-value' : '' );
+				printf( '<input type="hidden" class="fcf-value" id="%s" name="%s" value="%s" />', esc_attr( $id ), esc_attr( $name ), $img_id ? esc_attr( $img_id ) : '' );
+				echo '<div class="fcf-image-preview">' . $preview . '</div>'; // wp_get_attachment_image() output is escaped.
 				printf(
-					'<p><button type="button" class="button bcf-image-select">%s</button> <button type="button" class="button-link bcf-media-remove">%s</button></p>',
-					esc_html__( 'Select Image', 'benzy-custom-fields' ),
-					esc_html__( 'Remove', 'benzy-custom-fields' )
+					'<p><button type="button" class="button fcf-image-select">%s</button> <button type="button" class="button-link fcf-media-remove">%s</button></p>',
+					esc_html__( 'Select Image', 'functional-custom-fields' ),
+					esc_html__( 'Remove', 'functional-custom-fields' )
 				);
 				echo '</div>';
 				break;
@@ -309,36 +309,36 @@ class BCF_Fields {
 			case 'gallery':
 				$ids = is_array( $value ) ? $value : explode( ',', (string) $value );
 				$ids = array_values( array_filter( array_map( 'absint', $ids ) ) );
-				echo '<div class="bcf-media bcf-gallery">';
-				printf( '<input type="hidden" class="bcf-value" id="%s" name="%s" value="%s" />', esc_attr( $id ), esc_attr( $name ), esc_attr( implode( ',', $ids ) ) );
-				echo '<ul class="bcf-gallery-items">';
+				echo '<div class="fcf-media fcf-gallery">';
+				printf( '<input type="hidden" class="fcf-value" id="%s" name="%s" value="%s" />', esc_attr( $id ), esc_attr( $name ), esc_attr( implode( ',', $ids ) ) );
+				echo '<ul class="fcf-gallery-items">';
 				foreach ( $ids as $att_id ) {
 					printf(
-						'<li data-id="%d">%s<button type="button" class="bcf-gallery-remove" aria-label="%s">&times;</button></li>',
+						'<li data-id="%d">%s<button type="button" class="fcf-gallery-remove" aria-label="%s">&times;</button></li>',
 						$att_id,
 						wp_get_attachment_image( $att_id, 'thumbnail' ),
-						esc_attr__( 'Remove image', 'benzy-custom-fields' )
+						esc_attr__( 'Remove image', 'functional-custom-fields' )
 					);
 				}
 				echo '</ul>';
-				printf( '<p><button type="button" class="button bcf-gallery-add">%s</button></p>', esc_html__( 'Add Images', 'benzy-custom-fields' ) );
+				printf( '<p><button type="button" class="button fcf-gallery-add">%s</button></p>', esc_html__( 'Add Images', 'functional-custom-fields' ) );
 				echo '</div>';
 				break;
 
 			case 'file':
 				$file_id = absint( $value );
 				$file    = $file_id ? get_attached_file( $file_id ) : '';
-				printf( '<div class="bcf-media bcf-file%s">', $file_id ? ' has-value' : '' );
-				printf( '<input type="hidden" class="bcf-value" id="%s" name="%s" value="%s" />', esc_attr( $id ), esc_attr( $name ), $file_id ? esc_attr( $file_id ) : '' );
+				printf( '<div class="fcf-media fcf-file%s">', $file_id ? ' has-value' : '' );
+				printf( '<input type="hidden" class="fcf-value" id="%s" name="%s" value="%s" />', esc_attr( $id ), esc_attr( $name ), $file_id ? esc_attr( $file_id ) : '' );
 				printf(
-					'<p class="bcf-file-name"><span class="dashicons dashicons-media-default"></span> <a href="%s" target="_blank" rel="noopener">%s</a></p>',
+					'<p class="fcf-file-name"><span class="dashicons dashicons-media-default"></span> <a href="%s" target="_blank" rel="noopener">%s</a></p>',
 					esc_url( $file_id ? wp_get_attachment_url( $file_id ) : '' ),
 					esc_html( $file ? wp_basename( $file ) : '' )
 				);
 				printf(
-					'<p><button type="button" class="button bcf-file-select">%s</button> <button type="button" class="button-link bcf-media-remove">%s</button></p>',
-					esc_html__( 'Select File', 'benzy-custom-fields' ),
-					esc_html__( 'Remove', 'benzy-custom-fields' )
+					'<p><button type="button" class="button fcf-file-select">%s</button> <button type="button" class="button-link fcf-media-remove">%s</button></p>',
+					esc_html__( 'Select File', 'functional-custom-fields' ),
+					esc_html__( 'Remove', 'functional-custom-fields' )
 				);
 				echo '</div>';
 				break;
@@ -346,25 +346,25 @@ class BCF_Fields {
 			case 'repeater':
 				$rows = is_array( $value ) ? array_values( $value ) : array();
 				printf(
-					'<div class="bcf-repeater" data-key="%s" data-min="%d" data-max="%d">',
+					'<div class="fcf-repeater" data-key="%s" data-min="%d" data-max="%d">',
 					esc_attr( $field['key'] ),
 					(int) $field['min'],
 					(int) $field['max']
 				);
 				// Empty hidden input lets "all rows removed" be saved.
 				printf( '<input type="hidden" name="%s" value="" />', esc_attr( $name ) );
-				echo '<div class="bcf-rows">';
+				echo '<div class="fcf-rows">';
 				foreach ( $rows as $i => $row ) {
 					self::render_row( $field, $row, $name, $id, $i );
 				}
 				echo '</div>';
 				// Row template; its placeholder index is never saved (non-numeric).
-				echo '<div class="bcf-row-template" hidden>';
+				echo '<div class="fcf-row-template" hidden>';
 				self::render_row( $field, null, $name, $id, '__IDX_' . $field['key'] . '__' );
 				echo '</div>';
 				printf(
-					'<button type="button" class="button bcf-add-row">%s</button>',
-					esc_html( '' !== $field['button_label'] ? $field['button_label'] : __( 'Add Row', 'benzy-custom-fields' ) )
+					'<button type="button" class="button fcf-add-row">%s</button>',
+					esc_html( '' !== $field['button_label'] ? $field['button_label'] : __( 'Add Row', 'functional-custom-fields' ) )
 				);
 				echo '</div>';
 				break;
@@ -375,13 +375,13 @@ class BCF_Fields {
 	 * Render one repeater row.
 	 */
 	protected static function render_row( $field, $row, $name, $id, $index ) {
-		echo '<div class="bcf-row">';
+		echo '<div class="fcf-row">';
 		printf(
-			'<div class="bcf-row-handle" title="%s"><span class="bcf-row-index">%s</span></div>',
-			esc_attr__( 'Drag to reorder, click to collapse', 'benzy-custom-fields' ),
+			'<div class="fcf-row-handle" title="%s"><span class="fcf-row-index">%s</span></div>',
+			esc_attr__( 'Drag to reorder, click to collapse', 'functional-custom-fields' ),
 			is_int( $index ) ? $index + 1 : ''
 		);
-		echo '<div class="bcf-row-fields">';
+		echo '<div class="fcf-row-fields">';
 		foreach ( $field['sub_fields'] as $sub ) {
 			$sub_value = is_array( $row ) && array_key_exists( $sub['name'], $row ) ? $row[ $sub['name'] ] : null;
 			self::render_field(
@@ -393,8 +393,8 @@ class BCF_Fields {
 		}
 		echo '</div>';
 		printf(
-			'<div class="bcf-row-actions"><button type="button" class="bcf-remove-row" aria-label="%s">&times;</button></div>',
-			esc_attr__( 'Remove row', 'benzy-custom-fields' )
+			'<div class="fcf-row-actions"><button type="button" class="fcf-remove-row" aria-label="%s">&times;</button></div>',
+			esc_attr__( 'Remove row', 'functional-custom-fields' )
 		);
 		echo '</div>';
 	}

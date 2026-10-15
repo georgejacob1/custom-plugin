@@ -5,9 +5,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class BCF_Field_Groups {
+class FCF_Field_Groups {
 
-	const POST_TYPE = 'bcf_group';
+	const POST_TYPE = 'fcf_group';
 
 	/** @var array|null Cached published groups. */
 	protected static $groups = null;
@@ -28,14 +28,14 @@ class BCF_Field_Groups {
 			self::POST_TYPE,
 			array(
 				'labels'          => array(
-					'name'          => __( 'Field Groups', 'benzy-custom-fields' ),
-					'singular_name' => __( 'Field Group', 'benzy-custom-fields' ),
-					'menu_name'     => __( 'Custom Fields', 'benzy-custom-fields' ),
-					'add_new'       => __( 'Add New', 'benzy-custom-fields' ),
-					'add_new_item'  => __( 'Add New Field Group', 'benzy-custom-fields' ),
-					'edit_item'     => __( 'Edit Field Group', 'benzy-custom-fields' ),
-					'search_items'  => __( 'Search Field Groups', 'benzy-custom-fields' ),
-					'not_found'     => __( 'No field groups found.', 'benzy-custom-fields' ),
+					'name'          => __( 'Field Groups', 'functional-custom-fields' ),
+					'singular_name' => __( 'Field Group', 'functional-custom-fields' ),
+					'menu_name'     => __( 'Custom Fields', 'functional-custom-fields' ),
+					'add_new'       => __( 'Add New', 'functional-custom-fields' ),
+					'add_new_item'  => __( 'Add New Field Group', 'functional-custom-fields' ),
+					'edit_item'     => __( 'Edit Field Group', 'functional-custom-fields' ),
+					'search_items'  => __( 'Search Field Groups', 'functional-custom-fields' ),
+					'not_found'     => __( 'No field groups found.', 'functional-custom-fields' ),
 				),
 				'public'          => false,
 				'show_ui'         => true,
@@ -63,74 +63,74 @@ class BCF_Field_Groups {
 	}
 
 	public static function add_meta_boxes() {
-		add_meta_box( 'bcf-builder', __( 'Fields', 'benzy-custom-fields' ), array( __CLASS__, 'render_builder' ), self::POST_TYPE, 'normal', 'high' );
-		add_meta_box( 'bcf-location', __( 'Location & Settings', 'benzy-custom-fields' ), array( __CLASS__, 'render_location' ), self::POST_TYPE, 'normal', 'default' );
+		add_meta_box( 'fcf-builder', __( 'Fields', 'functional-custom-fields' ), array( __CLASS__, 'render_builder' ), self::POST_TYPE, 'normal', 'high' );
+		add_meta_box( 'fcf-location', __( 'Location & Settings', 'functional-custom-fields' ), array( __CLASS__, 'render_location' ), self::POST_TYPE, 'normal', 'default' );
 	}
 
 	public static function render_builder( $post ) {
-		wp_nonce_field( 'bcf_save_group', 'bcf_group_nonce' );
+		wp_nonce_field( 'fcf_save_group', 'fcf_group_nonce' );
 		$fields = self::get_fields( $post->ID );
 		?>
-		<div id="bcf-builder">
-			<div class="bcf-b-columns">
-				<span class="bcf-b-col-label"><?php esc_html_e( 'Label', 'benzy-custom-fields' ); ?></span>
-				<span class="bcf-b-col-name"><?php esc_html_e( 'Name', 'benzy-custom-fields' ); ?></span>
-				<span class="bcf-b-col-type"><?php esc_html_e( 'Type', 'benzy-custom-fields' ); ?></span>
+		<div id="fcf-builder">
+			<div class="fcf-b-columns">
+				<span class="fcf-b-col-label"><?php esc_html_e( 'Label', 'functional-custom-fields' ); ?></span>
+				<span class="fcf-b-col-name"><?php esc_html_e( 'Name', 'functional-custom-fields' ); ?></span>
+				<span class="fcf-b-col-type"><?php esc_html_e( 'Type', 'functional-custom-fields' ); ?></span>
 			</div>
-			<ul class="bcf-b-list bcf-b-root"></ul>
-			<p class="bcf-b-empty"><?php esc_html_e( 'No fields yet. Click "Add Field" to create your first field.', 'benzy-custom-fields' ); ?></p>
-			<p><button type="button" class="button button-primary bcf-b-add"><?php esc_html_e( '+ Add Field', 'benzy-custom-fields' ); ?></button></p>
-			<textarea id="bcf-fields-json" name="bcf_fields_json" hidden><?php echo esc_textarea( wp_json_encode( $fields ) ); ?></textarea>
+			<ul class="fcf-b-list fcf-b-root"></ul>
+			<p class="fcf-b-empty"><?php esc_html_e( 'No fields yet. Click "Add Field" to create your first field.', 'functional-custom-fields' ); ?></p>
+			<p><button type="button" class="button button-primary fcf-b-add"><?php esc_html_e( '+ Add Field', 'functional-custom-fields' ); ?></button></p>
+			<textarea id="fcf-fields-json" name="fcf_fields_json" hidden><?php echo esc_textarea( wp_json_encode( $fields ) ); ?></textarea>
 		</div>
 		<?php
 	}
 
 	public static function render_location( $post ) {
-		$selected_types = (array) get_post_meta( $post->ID, '_bcf_post_types', true );
-		$template       = (string) get_post_meta( $post->ID, '_bcf_page_template', true );
-		$position       = (string) get_post_meta( $post->ID, '_bcf_position', true );
+		$selected_types = (array) get_post_meta( $post->ID, '_fcf_post_types', true );
+		$template       = (string) get_post_meta( $post->ID, '_fcf_page_template', true );
+		$position       = (string) get_post_meta( $post->ID, '_fcf_position', true );
 
 		if ( 'auto-draft' === $post->post_status && ! array_filter( $selected_types ) ) {
 			$selected_types = array( 'page' );
 		}
 
 		$templates = array_merge(
-			array( 'default' => __( 'Default Template', 'benzy-custom-fields' ) ),
+			array( 'default' => __( 'Default Template', 'functional-custom-fields' ) ),
 			wp_get_theme()->get_page_templates()
 		);
 		?>
-		<table class="form-table bcf-location-table">
+		<table class="form-table fcf-location-table">
 			<tr>
-				<th scope="row"><?php esc_html_e( 'Show on post types', 'benzy-custom-fields' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Show on post types', 'functional-custom-fields' ); ?></th>
 				<td>
 					<?php foreach ( self::available_post_types() as $type ) : ?>
-						<label class="bcf-inline-check">
-							<input type="checkbox" name="bcf_post_types[]" value="<?php echo esc_attr( $type->name ); ?>" <?php checked( in_array( $type->name, $selected_types, true ) ); ?> />
+						<label class="fcf-inline-check">
+							<input type="checkbox" name="fcf_post_types[]" value="<?php echo esc_attr( $type->name ); ?>" <?php checked( in_array( $type->name, $selected_types, true ) ); ?> />
 							<?php echo esc_html( $type->labels->singular_name ); ?> <code><?php echo esc_html( $type->name ); ?></code>
 						</label>
 					<?php endforeach; ?>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="bcf-page-template"><?php esc_html_e( 'Only for page template', 'benzy-custom-fields' ); ?></label></th>
+				<th scope="row"><label for="fcf-page-template"><?php esc_html_e( 'Only for page template', 'functional-custom-fields' ); ?></label></th>
 				<td>
-					<select id="bcf-page-template" name="bcf_page_template">
-						<option value=""><?php esc_html_e( '— Any template —', 'benzy-custom-fields' ); ?></option>
+					<select id="fcf-page-template" name="fcf_page_template">
+						<option value=""><?php esc_html_e( '— Any template —', 'functional-custom-fields' ); ?></option>
 						<?php foreach ( $templates as $file => $label ) : ?>
 							<option value="<?php echo esc_attr( $file ); ?>" <?php selected( $template, $file ); ?>><?php echo esc_html( $label ); ?></option>
 						<?php endforeach; ?>
 					</select>
-					<p class="description"><?php esc_html_e( 'Optional. After changing a page\'s template, save and reload the page to see matching field groups.', 'benzy-custom-fields' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Optional. After changing a page\'s template, save and reload the page to see matching field groups.', 'functional-custom-fields' ); ?></p>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="bcf-position"><?php esc_html_e( 'Position', 'benzy-custom-fields' ); ?></label></th>
+				<th scope="row"><label for="fcf-position"><?php esc_html_e( 'Position', 'functional-custom-fields' ); ?></label></th>
 				<td>
-					<select id="bcf-position" name="bcf_position">
-						<option value="normal" <?php selected( $position, 'normal' ); ?>><?php esc_html_e( 'Normal (below content)', 'benzy-custom-fields' ); ?></option>
-						<option value="side" <?php selected( $position, 'side' ); ?>><?php esc_html_e( 'Side', 'benzy-custom-fields' ); ?></option>
+					<select id="fcf-position" name="fcf_position">
+						<option value="normal" <?php selected( $position, 'normal' ); ?>><?php esc_html_e( 'Normal (below content)', 'functional-custom-fields' ); ?></option>
+						<option value="side" <?php selected( $position, 'side' ); ?>><?php esc_html_e( 'Side', 'functional-custom-fields' ); ?></option>
 					</select>
-					<p class="description"><?php esc_html_e( 'Use "Order" in the Page Attributes box to sort multiple groups.', 'benzy-custom-fields' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Use "Order" in the Page Attributes box to sort multiple groups.', 'functional-custom-fields' ); ?></p>
 				</td>
 			</tr>
 		</table>
@@ -138,26 +138,26 @@ class BCF_Field_Groups {
 	}
 
 	public static function save( $post_id, $post ) {
-		if ( ! isset( $_POST['bcf_group_nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['bcf_group_nonce'] ), 'bcf_save_group' ) ) {
+		if ( ! isset( $_POST['fcf_group_nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['fcf_group_nonce'] ), 'fcf_save_group' ) ) {
 			return;
 		}
 		if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || wp_is_post_revision( $post_id ) || ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
-		$raw    = isset( $_POST['bcf_fields_json'] ) ? json_decode( wp_unslash( $_POST['bcf_fields_json'] ), true ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- sanitized below.
-		$fields = BCF_Fields::sanitize_definitions( $raw );
-		update_post_meta( $post_id, '_bcf_fields', wp_slash( $fields ) );
+		$raw    = isset( $_POST['fcf_fields_json'] ) ? json_decode( wp_unslash( $_POST['fcf_fields_json'] ), true ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- sanitized below.
+		$fields = FCF_Fields::sanitize_definitions( $raw );
+		update_post_meta( $post_id, '_fcf_fields', wp_slash( $fields ) );
 
 		$valid_types = wp_list_pluck( self::available_post_types(), 'name' );
-		$types       = isset( $_POST['bcf_post_types'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['bcf_post_types'] ) ) : array();
-		update_post_meta( $post_id, '_bcf_post_types', array_values( array_intersect( $types, $valid_types ) ) );
+		$types       = isset( $_POST['fcf_post_types'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['fcf_post_types'] ) ) : array();
+		update_post_meta( $post_id, '_fcf_post_types', array_values( array_intersect( $types, $valid_types ) ) );
 
-		$template = isset( $_POST['bcf_page_template'] ) ? sanitize_text_field( wp_unslash( $_POST['bcf_page_template'] ) ) : '';
-		update_post_meta( $post_id, '_bcf_page_template', $template );
+		$template = isset( $_POST['fcf_page_template'] ) ? sanitize_text_field( wp_unslash( $_POST['fcf_page_template'] ) ) : '';
+		update_post_meta( $post_id, '_fcf_page_template', $template );
 
-		$position = isset( $_POST['bcf_position'] ) && 'side' === $_POST['bcf_position'] ? 'side' : 'normal';
-		update_post_meta( $post_id, '_bcf_position', $position );
+		$position = isset( $_POST['fcf_position'] ) && 'side' === $_POST['fcf_position'] ? 'side' : 'normal';
+		update_post_meta( $post_id, '_fcf_position', $position );
 	}
 
 	public static function enqueue( $hook ) {
@@ -166,25 +166,25 @@ class BCF_Field_Groups {
 			return;
 		}
 
-		wp_enqueue_style( 'bcf-builder', BCF_URL . 'assets/css/builder.css', array(), BCF_VERSION );
+		wp_enqueue_style( 'fcf-builder', FCF_URL . 'assets/css/builder.css', array(), FCF_VERSION );
 
 		if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
 			return;
 		}
 
-		wp_enqueue_script( 'bcf-builder', BCF_URL . 'assets/js/builder.js', array( 'jquery', 'jquery-ui-sortable' ), BCF_VERSION, true );
+		wp_enqueue_script( 'fcf-builder', FCF_URL . 'assets/js/builder.js', array( 'jquery', 'jquery-ui-sortable' ), FCF_VERSION, true );
 		wp_localize_script(
-			'bcf-builder',
-			'bcfBuilder',
+			'fcf-builder',
+			'fcfBuilder',
 			array(
-				'types' => BCF_Fields::types(),
+				'types' => FCF_Fields::types(),
 				'i18n'  => array(
-					'newField'      => __( 'New Field', 'benzy-custom-fields' ),
-					'addSubField'   => __( '+ Add Sub Field', 'benzy-custom-fields' ),
-					'confirmDelete' => __( 'Delete this field?', 'benzy-custom-fields' ),
-					'edit'          => __( 'Edit', 'benzy-custom-fields' ),
-					'duplicate'     => __( 'Duplicate', 'benzy-custom-fields' ),
-					'delete'        => __( 'Delete', 'benzy-custom-fields' ),
+					'newField'      => __( 'New Field', 'functional-custom-fields' ),
+					'addSubField'   => __( '+ Add Sub Field', 'functional-custom-fields' ),
+					'confirmDelete' => __( 'Delete this field?', 'functional-custom-fields' ),
+					'edit'          => __( 'Edit', 'functional-custom-fields' ),
+					'duplicate'     => __( 'Duplicate', 'functional-custom-fields' ),
+					'delete'        => __( 'Delete', 'functional-custom-fields' ),
 				),
 			)
 		);
@@ -193,8 +193,8 @@ class BCF_Field_Groups {
 	public static function columns( $columns ) {
 		$date = isset( $columns['date'] ) ? $columns['date'] : null;
 		unset( $columns['date'] );
-		$columns['bcf_fields']   = __( 'Fields', 'benzy-custom-fields' );
-		$columns['bcf_location'] = __( 'Location', 'benzy-custom-fields' );
+		$columns['fcf_fields']   = __( 'Fields', 'functional-custom-fields' );
+		$columns['fcf_location'] = __( 'Location', 'functional-custom-fields' );
 		if ( $date ) {
 			$columns['date'] = $date;
 		}
@@ -202,14 +202,14 @@ class BCF_Field_Groups {
 	}
 
 	public static function column_content( $column, $post_id ) {
-		if ( 'bcf_fields' === $column ) {
+		if ( 'fcf_fields' === $column ) {
 			echo (int) count( self::get_fields( $post_id ) );
-		} elseif ( 'bcf_location' === $column ) {
-			$types    = array_filter( (array) get_post_meta( $post_id, '_bcf_post_types', true ) );
-			$template = get_post_meta( $post_id, '_bcf_page_template', true );
+		} elseif ( 'fcf_location' === $column ) {
+			$types    = array_filter( (array) get_post_meta( $post_id, '_fcf_post_types', true ) );
+			$template = get_post_meta( $post_id, '_fcf_page_template', true );
 			echo esc_html( $types ? implode( ', ', $types ) : '—' );
 			if ( $template ) {
-				echo '<br><small>' . esc_html( sprintf( /* translators: %s: template file */ __( 'Template: %s', 'benzy-custom-fields' ), $template ) ) . '</small>';
+				echo '<br><small>' . esc_html( sprintf( /* translators: %s: template file */ __( 'Template: %s', 'functional-custom-fields' ), $template ) ) . '</small>';
 			}
 		}
 	}
@@ -236,7 +236,7 @@ class BCF_Field_Groups {
 	 * @return array
 	 */
 	public static function get_fields( $group_id ) {
-		$fields = get_post_meta( $group_id, '_bcf_fields', true );
+		$fields = get_post_meta( $group_id, '_fcf_fields', true );
 		return is_array( $fields ) ? $fields : array();
 	}
 
@@ -269,9 +269,9 @@ class BCF_Field_Groups {
 				'id'         => $group->ID,
 				'title'      => $group->post_title,
 				'fields'     => self::get_fields( $group->ID ),
-				'post_types' => array_filter( (array) get_post_meta( $group->ID, '_bcf_post_types', true ) ),
-				'template'   => (string) get_post_meta( $group->ID, '_bcf_page_template', true ),
-				'position'   => 'side' === get_post_meta( $group->ID, '_bcf_position', true ) ? 'side' : 'normal',
+				'post_types' => array_filter( (array) get_post_meta( $group->ID, '_fcf_post_types', true ) ),
+				'template'   => (string) get_post_meta( $group->ID, '_fcf_page_template', true ),
+				'position'   => 'side' === get_post_meta( $group->ID, '_fcf_position', true ) ? 'side' : 'normal',
 			);
 		}
 

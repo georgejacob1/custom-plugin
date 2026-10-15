@@ -1,9 +1,9 @@
-/* global jQuery, bcfBuilder */
+/* global jQuery, fcfBuilder */
 (function ($) {
 	'use strict';
 
-	var TYPES = bcfBuilder.types;
-	var i18n = bcfBuilder.i18n;
+	var TYPES = fcfBuilder.types;
+	var i18n = fcfBuilder.i18n;
 	var CHOICE_TYPES = ['select', 'checkbox', 'radio'];
 
 	function uid() {
@@ -26,7 +26,7 @@
 	// Elements of $li that belong to it, not to nested sub fields.
 	function own($li, selector) {
 		return $li.find(selector).filter(function () {
-			return $(this).closest('.bcf-b-field')[0] === $li[0];
+			return $(this).closest('.fcf-b-field')[0] === $li[0];
 		});
 	}
 
@@ -44,25 +44,25 @@
 			default_value: '', placeholder: '', choices: '', min: '', max: '', button_label: '', sub_fields: []
 		}, f || {});
 
-		var $li = $('<li class="bcf-b-field">').attr('data-key', f.key);
+		var $li = $('<li class="fcf-b-field">').attr('data-key', f.key);
 
-		var $head = $('<div class="bcf-b-head">').append(
-			'<span class="bcf-b-handle dashicons dashicons-menu"></span>',
-			$('<span class="bcf-b-col-label">').append('<strong class="bcf-b-label"></strong>'),
-			$('<span class="bcf-b-col-name">').append('<code class="bcf-b-name"></code>'),
-			$('<span class="bcf-b-col-type bcf-b-type">'),
-			$('<span class="bcf-b-actions">').append(
-				$('<a href="#" class="bcf-b-toggle">').text(i18n.edit), ' | ',
-				$('<a href="#" class="bcf-b-dup">').text(i18n.duplicate), ' | ',
-				$('<a href="#" class="bcf-b-delete">').text(i18n.delete)
+		var $head = $('<div class="fcf-b-head">').append(
+			'<span class="fcf-b-handle dashicons dashicons-menu"></span>',
+			$('<span class="fcf-b-col-label">').append('<strong class="fcf-b-label"></strong>'),
+			$('<span class="fcf-b-col-name">').append('<code class="fcf-b-name"></code>'),
+			$('<span class="fcf-b-col-type fcf-b-type">'),
+			$('<span class="fcf-b-actions">').append(
+				$('<a href="#" class="fcf-b-toggle">').text(i18n.edit), ' | ',
+				$('<a href="#" class="fcf-b-dup">').text(i18n.duplicate), ' | ',
+				$('<a href="#" class="fcf-b-delete">').text(i18n.delete)
 			)
 		);
 
-		var $table = $('<table class="form-table bcf-b-settings">').append(
+		var $table = $('<table class="form-table fcf-b-settings">').append(
 			row('Label', '<input type="text" class="widefat" data-prop="label">'),
 			row('Name', $('<div>').append(
 				'<input type="text" class="widefat code" data-prop="name">',
-				'<p class="description">Used in code: <code class="bcf-b-usage"></code></p>'
+				'<p class="description">Used in code: <code class="fcf-b-usage"></code></p>'
 			)),
 			row('Type', $('<select class="widefat" data-prop="type">').append(typeOptions())),
 			row('Instructions', '<textarea class="widefat" rows="2" data-prop="instructions"></textarea>'),
@@ -80,13 +80,13 @@
 			row('Minimum', '<input type="number" class="small-text" data-prop="min">', 'number,repeater'),
 			row('Maximum', '<input type="number" class="small-text" data-prop="max">', 'number,repeater'),
 			row('Button Label', '<input type="text" class="widefat" data-prop="button_label" placeholder="Add Row">', 'repeater'),
-			row('Sub Fields', $('<div class="bcf-b-sub">').append(
-				'<ul class="bcf-b-list"></ul>',
-				$('<button type="button" class="button bcf-b-add">').text(i18n.addSubField)
+			row('Sub Fields', $('<div class="fcf-b-sub">').append(
+				'<ul class="fcf-b-list"></ul>',
+				$('<button type="button" class="button fcf-b-add">').text(i18n.addSubField)
 			), 'repeater')
 		);
 
-		$li.append($head, $('<div class="bcf-b-body">').append($table));
+		$li.append($head, $('<div class="fcf-b-body">').append($table));
 
 		// Fill values.
 		own($li, '[data-prop]').each(function () {
@@ -100,7 +100,7 @@
 		});
 		own($li, '[data-prop="name"]').data('touched', !!f.name);
 
-		var $subList = own($li, '.bcf-b-list');
+		var $subList = own($li, '.fcf-b-list');
 		$.each(f.sub_fields || [], function (i, sub) {
 			$subList.append(buildField(sub));
 		});
@@ -115,10 +115,10 @@
 		var label = own($li, '[data-prop="label"]').val();
 		var name = own($li, '[data-prop="name"]').val();
 
-		$li.find('> .bcf-b-head .bcf-b-label').text(label || i18n.newField);
-		$li.find('> .bcf-b-head .bcf-b-name').text(name);
-		$li.find('> .bcf-b-head .bcf-b-type').text(TYPES[type] || type);
-		own($li, '.bcf-b-usage').text("bcf_get_field( '" + name + "' )");
+		$li.find('> .fcf-b-head .fcf-b-label').text(label || i18n.newField);
+		$li.find('> .fcf-b-head .fcf-b-name').text(name);
+		$li.find('> .fcf-b-head .fcf-b-type').text(TYPES[type] || type);
+		own($li, '.fcf-b-usage').text("fcf_get_field( '" + name + "' )");
 
 		own($li, 'tr[data-types]').each(function () {
 			var show = $(this).attr('data-types').split(',').indexOf(type) !== -1;
@@ -129,7 +129,7 @@
 	}
 
 	function readList($ul) {
-		return $ul.children('.bcf-b-field').map(function () {
+		return $ul.children('.fcf-b-field').map(function () {
 			return readField($(this));
 		}).get();
 	}
@@ -140,22 +140,22 @@
 			var $input = $(this);
 			f[$input.data('prop')] = $input.is(':checkbox') ? ($input.is(':checked') ? 1 : 0) : $input.val();
 		});
-		f.sub_fields = f.type === 'repeater' ? readList(own($li, '.bcf-b-list').first()) : [];
+		f.sub_fields = f.type === 'repeater' ? readList(own($li, '.fcf-b-list').first()) : [];
 		return f;
 	}
 
 	function makeSortable($ul) {
 		$ul.sortable({
-			handle: '.bcf-b-handle',
-			items: '> .bcf-b-field',
+			handle: '.fcf-b-handle',
+			items: '> .fcf-b-field',
 			axis: 'y',
-			placeholder: 'bcf-b-placeholder',
+			placeholder: 'fcf-b-placeholder',
 			forcePlaceholderSize: true
 		});
 	}
 
 	function updateEmpty() {
-		$('#bcf-builder .bcf-b-empty').toggle(!$('#bcf-builder .bcf-b-root').children().length);
+		$('#fcf-builder .fcf-b-empty').toggle(!$('#fcf-builder .fcf-b-root').children().length);
 	}
 
 	function giveNewKeys(data) {
@@ -167,15 +167,15 @@
 	}
 
 	$(function () {
-		var $builder = $('#bcf-builder');
+		var $builder = $('#fcf-builder');
 		if (!$builder.length) {
 			return;
 		}
 
-		var $root = $builder.find('.bcf-b-root');
+		var $root = $builder.find('.fcf-b-root');
 		var fields = [];
 		try {
-			fields = JSON.parse($('#bcf-fields-json').val() || '[]') || [];
+			fields = JSON.parse($('#fcf-fields-json').val() || '[]') || [];
 		} catch (e) {
 			fields = [];
 		}
@@ -186,31 +186,31 @@
 		makeSortable($root);
 		updateEmpty();
 
-		$builder.on('click', '.bcf-b-add', function (e) {
+		$builder.on('click', '.fcf-b-add', function (e) {
 			e.preventDefault();
-			var $list = $(this).closest('td, #bcf-builder').find('.bcf-b-list').first();
+			var $list = $(this).closest('td, #fcf-builder').find('.fcf-b-list').first();
 			var $li = buildField().addClass('is-open');
 			$list.append($li);
 			updateEmpty();
 			own($li, '[data-prop="label"]').trigger('focus');
 		});
 
-		$builder.on('click', '.bcf-b-toggle, .bcf-b-label', function (e) {
+		$builder.on('click', '.fcf-b-toggle, .fcf-b-label', function (e) {
 			e.preventDefault();
-			$(this).closest('.bcf-b-field').toggleClass('is-open');
+			$(this).closest('.fcf-b-field').toggleClass('is-open');
 		});
 
-		$builder.on('click', '.bcf-b-delete', function (e) {
+		$builder.on('click', '.fcf-b-delete', function (e) {
 			e.preventDefault();
 			if (window.confirm(i18n.confirmDelete)) {
-				$(this).closest('.bcf-b-field').remove();
+				$(this).closest('.fcf-b-field').remove();
 				updateEmpty();
 			}
 		});
 
-		$builder.on('click', '.bcf-b-dup', function (e) {
+		$builder.on('click', '.fcf-b-dup', function (e) {
 			e.preventDefault();
-			var $li = $(this).closest('.bcf-b-field');
+			var $li = $(this).closest('.fcf-b-field');
 			var data = giveNewKeys(readField($li));
 			data.name = data.name ? data.name + '_copy' : '';
 			data.label = data.label ? data.label + ' (copy)' : '';
@@ -218,7 +218,7 @@
 		});
 
 		$builder.on('input', '[data-prop="label"]', function () {
-			var $li = $(this).closest('.bcf-b-field');
+			var $li = $(this).closest('.fcf-b-field');
 			var $name = own($li, '[data-prop="name"]');
 			if (!$name.data('touched')) {
 				$name.val(slugify(this.value));
@@ -228,26 +228,26 @@
 
 		$builder.on('input', '[data-prop="name"]', function () {
 			$(this).data('touched', this.value !== '');
-			refresh($(this).closest('.bcf-b-field'));
+			refresh($(this).closest('.fcf-b-field'));
 		});
 
 		$builder.on('blur', '[data-prop="name"]', function () {
 			this.value = slugify(this.value);
-			refresh($(this).closest('.bcf-b-field'));
+			refresh($(this).closest('.fcf-b-field'));
 		});
 
 		$builder.on('change', '[data-prop="type"]', function () {
-			refresh($(this).closest('.bcf-b-field'));
+			refresh($(this).closest('.fcf-b-field'));
 		});
 
 		// Keep the two inputs that share the "placeholder" property in sync.
 		$builder.on('input', '[data-prop="placeholder"]', function () {
 			var value = this.value;
-			own($(this).closest('.bcf-b-field'), '[data-prop="placeholder"]').not(this).val(value);
+			own($(this).closest('.fcf-b-field'), '[data-prop="placeholder"]').not(this).val(value);
 		});
 
 		$('#post').on('submit', function () {
-			$('#bcf-fields-json').val(JSON.stringify(readList($root)));
+			$('#fcf-fields-json').val(JSON.stringify(readList($root)));
 		});
 	});
 }(jQuery));

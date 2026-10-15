@@ -1,56 +1,56 @@
-.bcf-fields .bcf-field {
+.fcf-fields .fcf-field {
 	margin: 0 0 18px;
 }
 
-.bcf-fields .bcf-field:last-child {
+.fcf-fields .fcf-field:last-child {
 	margin-bottom: 4px;
 }
 
-.bcf-label {
+.fcf-label {
 	display: block;
 	font-weight: 600;
 	margin-bottom: 4px;
 }
 
-.bcf-required {
+.fcf-required {
 	color: #d63638;
 }
 
-.bcf-instructions {
+.fcf-instructions {
 	margin: 0 0 6px !important;
 }
 
-.bcf-choice-list {
+.fcf-choice-list {
 	margin: 0;
 }
 
-.bcf-choice-list li {
+.fcf-choice-list li {
 	margin-bottom: 4px;
 }
 
-.bcf-input .wp-editor-wrap {
+.fcf-input .wp-editor-wrap {
 	border: 1px solid #dcdcde;
 }
 
-.bcf-input .wp-editor-container textarea {
+.fcf-input .wp-editor-container textarea {
 	width: 100%;
 }
 
 /* Media */
-.bcf-media p {
+.fcf-media p {
 	margin: 6px 0 0;
 }
 
-.bcf-media .bcf-media-remove {
+.fcf-media .fcf-media-remove {
 	color: #b32d2e;
 }
 
-.bcf-media:not(.has-value) .bcf-media-remove,
-.bcf-file:not(.has-value) .bcf-file-name {
+.fcf-media:not(.has-value) .fcf-media-remove,
+.fcf-file:not(.has-value) .fcf-file-name {
 	display: none;
 }
 
-.bcf-image-preview img {
+.fcf-image-preview img {
 	display: block;
 	max-width: 100%;
 	max-height: 240px;
@@ -60,18 +60,18 @@
 	background: #f6f7f7;
 }
 
-.bcf-file-name .dashicons {
+.fcf-file-name .dashicons {
 	color: #787c82;
 }
 
-.bcf-gallery-items {
+.fcf-gallery-items {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 8px;
 	margin: 0;
 }
 
-.bcf-gallery-items li {
+.fcf-gallery-items li {
 	position: relative;
 	width: 90px;
 	height: 90px;
@@ -81,14 +81,14 @@
 	cursor: move;
 }
 
-.bcf-gallery-items img {
+.fcf-gallery-items img {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 	display: block;
 }
 
-.bcf-gallery-remove {
+.fcf-gallery-remove {
 	position: absolute;
 	top: -8px;
 	right: -8px;
@@ -105,23 +105,23 @@
 }
 
 /* Repeater */
-.bcf-repeater .bcf-rows {
+.fcf-repeater .fcf-rows {
 	border: 1px solid #c3c4c7;
 	border-bottom: 0;
 	margin-bottom: 10px;
 }
 
-.bcf-repeater.is-empty .bcf-rows {
+.fcf-repeater.is-empty .fcf-rows {
 	display: none;
 }
 
-.bcf-row {
+.fcf-row {
 	display: flex;
 	background: #fff;
 	border-bottom: 1px solid #c3c4c7;
 }
 
-.bcf-row-handle {
+.fcf-row-handle {
 	flex: 0 0 34px;
 	display: flex;
 	align-items: flex-start;
@@ -134,13 +134,13 @@
 	user-select: none;
 }
 
-.bcf-row-fields {
+.fcf-row-fields {
 	flex: 1;
 	min-width: 0;
 	padding: 12px;
 }
 
-.bcf-row-actions {
+.fcf-row-actions {
 	flex: 0 0 30px;
 	display: flex;
 	align-items: flex-start;
@@ -149,7 +149,7 @@
 	border-left: 1px solid #dcdcde;
 }
 
-.bcf-remove-row {
+.fcf-remove-row {
 	width: 22px;
 	height: 22px;
 	padding: 0;
@@ -162,33 +162,33 @@
 	cursor: pointer;
 }
 
-.bcf-remove-row:hover {
+.fcf-remove-row:hover {
 	background: #d63638;
 	color: #fff;
 }
 
-.bcf-row.is-collapsed .bcf-row-fields {
+.fcf-row.is-collapsed .fcf-row-fields {
 	height: 0;
 	padding: 0;
 	overflow: hidden;
 }
 
-.bcf-row.is-collapsed .bcf-row-handle,
-.bcf-row.is-collapsed .bcf-row-actions {
+.fcf-row.is-collapsed .fcf-row-handle,
+.fcf-row.is-collapsed .fcf-row-actions {
 	padding-top: 6px;
 	padding-bottom: 6px;
 }
 
-.bcf-row-placeholder {
+.fcf-row-placeholder {
 	background: #f0f6fc;
 	border: 1px dashed #2271b1;
 }
 
-.bcf-row-template {
+.fcf-row-template {
 	display: none !important;
 }
 
 /* Nested repeaters get a subtle tint. */
-.bcf-row .bcf-row {
+.fcf-row .fcf-row {
 	background: #fcfcfc;
 }
