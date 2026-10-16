@@ -1614,3 +1614,33 @@ body.post-type-fcf_group.edit-php .column-fcf_description {
 .fcf-toolbar-btn .dashicons::before {
 	line-height: 1;
 }
+
+/* Group Settings: delete */
+.fcf-s-setting.fcf-s-danger {
+	margin-top: 8px;
+	padding-top: 24px;
+	padding-bottom: 0;
+	border-top: 1px solid #f0f0f1;
+}
+
+.fcf-s-danger .fcf-s-desc {
+	margin-bottom: 12px;
+}
+
+.fcf-toolbar-btn.fcf-s-delete {
+	border-color: #d63638;
+	color: #d63638;
+}
+
+.fcf-toolbar-btn.fcf-s-delete:hover,
+.fcf-toolbar-btn.fcf-s-delete:focus {
+	border-color: #b32d2e;
+	background: #fcf0f1;
+	color: #b32d2e;
+}
+
+.fcf-s-delete .dashicons {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+}

@@ -244,6 +244,15 @@ class FCF_Field_Groups {
 					<input type="text" id="fcf-description" class="fcf-s-input" name="fcf_description" value="<?php echo esc_attr( $description ); ?>" />
 					<p class="fcf-s-desc"><?php esc_html_e( 'Shown in the field group list.', 'functional-custom-fields' ); ?></p>
 				</div>
+				<?php if ( ! $is_new && current_user_can( 'delete_post', $post->ID ) ) : ?>
+					<div class="fcf-s-setting fcf-s-danger">
+						<span class="fcf-s-label"><?php esc_html_e( 'Delete Field Group', 'functional-custom-fields' ); ?></span>
+						<p class="fcf-s-desc"><?php esc_html_e( 'Moves this field group to the trash. Saved field values stay in the database and come back if the group is restored.', 'functional-custom-fields' ); ?></p>
+						<a href="<?php echo esc_url( get_delete_post_link( $post->ID ) ); ?>" class="fcf-toolbar-btn fcf-s-delete" onclick="return window.confirm( <?php echo esc_attr( wp_json_encode( __( 'Move this field group to the trash?', 'functional-custom-fields' ) ) ); ?> );">
+							<span class="dashicons dashicons-trash" aria-hidden="true"></span><?php esc_html_e( 'Delete Field Group', 'functional-custom-fields' ); ?>
+						</a>
+					</div>
+				<?php endif; ?>
 			</div>
 		</div>
 		<?php

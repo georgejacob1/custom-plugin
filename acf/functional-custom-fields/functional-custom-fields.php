@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Functional Custom Fields
  * Description:       Build custom field groups (text, textarea, WYSIWYG, image, gallery, file, repeater and more) and attach them to pages, posts and custom post types.
- * Version:           1.6.0
+ * Version:           1.6.1
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Benzy Infotech
@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'FCF_VERSION', '1.6.0' );
+define( 'FCF_VERSION', '1.6.1' );
 define( 'FCF_FILE', __FILE__ );
 define( 'FCF_DIR', plugin_dir_path( __FILE__ ) );
 define( 'FCF_URL', plugin_dir_url( __FILE__ ) );
