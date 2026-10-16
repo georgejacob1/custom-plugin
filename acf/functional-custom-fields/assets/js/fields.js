@@ -32,6 +32,7 @@
 				setup: function (editor) {
 					editor.on('change keyup', function () {
 						editor.save();
+						$(textarea).trigger('change');
 					});
 				}
 			},
@@ -56,7 +57,16 @@
 	function init($ctx) {
 		$ctx.find('.fcf-color').filter(notInTemplate).each(function () {
 			if (!$(this).data('fcfInit')) {
-				$(this).data('fcfInit', 1).wpColorPicker();
+				$(this).data('fcfInit', 1).wpColorPicker({
+					change: function (e) {
+						window.setTimeout(function () {
+							$(e.target).trigger('change');
+						});
+					},
+					clear: function () {
+						$(this).closest('.fcf-field').find('.fcf-color').trigger('change');
+					}
+				});
 			}
 		});
 
@@ -124,6 +134,7 @@
 		$rep.children('.fcf-rows').append($row);
 		init($row);
 		refreshRepeater($rep);
+		applyLogic($rep.closest('.fcf-fields'));
 		return $row;
 	}
 
@@ -168,6 +179,7 @@
 		});
 		$row.remove();
 		refreshRepeater($rep);
+		applyLogic($rep.closest('.fcf-fields'));
 	});
 
 	$(document).on('click', '.fcf-row-handle', function () {
@@ -176,26 +188,78 @@
 
 	/* ---------- Media ---------- */
 
-	function mediaFrame(title, type, multiple) {
-		var options = {
+	function mediaFrame($wrap, title, type, multiple) {
+		var library = {};
+		if (type) {
+			library.type = type;
+		}
+		if ($wrap.data('library') === 'uploadedTo' && wp.media.view.settings.post && wp.media.view.settings.post.id) {
+			library.uploadedTo = wp.media.view.settings.post.id;
+		}
+		return wp.media({
 			title: title,
 			multiple: multiple ? 'add' : false,
+			library: library,
 			button: { text: i18n.use }
-		};
-		if (type) {
-			options.library = { type: type };
+		});
+	}
+
+	// Problems with an attachment against the field's restrictions.
+	function attachmentErrors($wrap, att) {
+		var d = $wrap.data();
+		var errors = [];
+		var mb = att.filesizeInBytes ? att.filesizeInBytes / 1048576 : null;
+
+		if (d.mimeTypes) {
+			var allowed = String(d.mimeTypes).split(',');
+			var ext = String(att.filename || att.url || '').split('.').pop().toLowerCase();
+			if (allowed.indexOf(ext) === -1) {
+				errors.push(i18n.fileType.replace('%s', allowed.join(', ')));
+			}
 		}
-		return wp.media(options);
+		if (mb !== null && d.minSize && mb < d.minSize) {
+			errors.push(i18n.minSize.replace('%s', d.minSize));
+		}
+		if (mb !== null && d.maxSize && mb > d.maxSize) {
+			errors.push(i18n.maxSize.replace('%s', d.maxSize));
+		}
+		if (att.width && att.height) {
+			if (d.minWidth && att.width < d.minWidth) {
+				errors.push(i18n.minWidth.replace('%d', d.minWidth));
+			}
+			if (d.minHeight && att.height < d.minHeight) {
+				errors.push(i18n.minHeight.replace('%d', d.minHeight));
+			}
+			if (d.maxWidth && att.width > d.maxWidth) {
+				errors.push(i18n.maxWidth.replace('%d', d.maxWidth));
+			}
+			if (d.maxHeight && att.height > d.maxHeight) {
+				errors.push(i18n.maxHeight.replace('%d', d.maxHeight));
+			}
+		}
+		return errors;
+	}
+
+	function rejectAttachment($wrap, att) {
+		var errors = attachmentErrors($wrap, att);
+		if (errors.length) {
+			window.alert(i18n.invalidFile + '\n\n' + (att.filename || att.title || '') + '\n- ' + errors.join('\n- '));
+		}
+		return errors.length > 0;
 	}
 
 	$(document).on('click', '.fcf-image-select', function (e) {
 		e.preventDefault();
 		var $wrap = $(this).closest('.fcf-image');
-		var frame = mediaFrame(i18n.selectImage, 'image', false);
+		var frame = mediaFrame($wrap, i18n.selectImage, 'image', false);
+		var size = $wrap.data('previewSize') || 'medium';
 
 		frame.on('select', function () {
 			var att = frame.state().get('selection').first().toJSON();
-			var url = att.sizes && att.sizes.medium ? att.sizes.medium.url : att.url;
+			if (rejectAttachment($wrap, att)) {
+				return;
+			}
+			var url = att.sizes && att.sizes[size] ? att.sizes[size].url : att.url;
 			$wrap.find('.fcf-value').val(att.id).trigger('change');
 			$wrap.find('.fcf-image-preview').empty().append($('<img>').attr({ src: url, alt: att.alt || '' }));
 			$wrap.addClass('has-value');
@@ -206,10 +270,13 @@
 	$(document).on('click', '.fcf-file-select', function (e) {
 		e.preventDefault();
 		var $wrap = $(this).closest('.fcf-file');
-		var frame = mediaFrame(i18n.selectFile, null, false);
+		var frame = mediaFrame($wrap, i18n.selectFile, null, false);
 
 		frame.on('select', function () {
 			var att = frame.state().get('selection').first().toJSON();
+			if (rejectAttachment($wrap, att)) {
+				return;
+			}
 			$wrap.find('.fcf-value').val(att.id).trigger('change');
 			$wrap.find('.fcf-file-name a').attr('href', att.url).text(att.filename);
 			$wrap.addClass('has-value');
@@ -236,13 +303,13 @@
 	$(document).on('click', '.fcf-gallery-add', function (e) {
 		e.preventDefault();
 		var $gallery = $(this).closest('.fcf-gallery');
-		var frame = mediaFrame(i18n.selectImages, 'image', true);
+		var frame = mediaFrame($gallery, i18n.selectImages, 'image', true);
 
 		frame.on('select', function () {
 			var $items = $gallery.find('.fcf-gallery-items');
 			frame.state().get('selection').each(function (model) {
 				var att = model.toJSON();
-				if ($items.children('[data-id="' + att.id + '"]').length) {
+				if ($items.children('[data-id="' + att.id + '"]').length || rejectAttachment($gallery, att)) {
 					return;
 				}
 				var url = att.sizes && att.sizes.thumbnail ? att.sizes.thumbnail.url : att.url;
@@ -263,6 +330,117 @@
 		syncGallery($gallery);
 	});
 
+	/* ---------- Conditional logic ---------- */
+
+	function fieldValue($field) {
+		var $input = $field.children('.fcf-input');
+		var ta, editor;
+
+		switch ($field.data('type')) {
+			case 'checkbox':
+				return $input.find('input[type="checkbox"]:checked').map(function () {
+					return this.value;
+				}).get();
+			case 'radio':
+				return $input.find('input[type="radio"]:checked').val() || '';
+			case 'true_false':
+				return $input.find('input[type="checkbox"]').is(':checked') ? '1' : '';
+			case 'wysiwyg':
+				ta = $input.find('textarea.fcf-wysiwyg')[0];
+				editor = ta && window.tinymce ? tinymce.get(ta.id) : null;
+				if (editor && !editor.isHidden()) {
+					return editor.getContent();
+				}
+				return ta ? ta.value : '';
+			case 'repeater':
+				return $input.find('> .fcf-repeater > .fcf-rows > .fcf-row').length ? '1' : '';
+			default:
+				return $input.find('.fcf-value, input:not([type="hidden"]), select, textarea').first().val() || '';
+		}
+	}
+
+	function ruleMatches(rule, value) {
+		var values = $.isArray(value) ? value : (value === '' || value === null ? [] : [String(value)]);
+		var pattern;
+
+		switch (rule.operator) {
+			case '!=empty':
+				return values.length > 0;
+			case '==empty':
+				return !values.length;
+			case '==':
+				return values.indexOf(rule.value) !== -1;
+			case '!=':
+				return values.indexOf(rule.value) === -1;
+			case '==pattern':
+				try {
+					pattern = new RegExp(rule.value);
+				} catch (e) {
+					return false;
+				}
+				return values.some(function (v) {
+					return pattern.test(v);
+				});
+			case '==contains':
+				return values.some(function (v) {
+					return v.indexOf(rule.value) !== -1;
+				});
+		}
+		return false;
+	}
+
+	function applyLogic($ctx) {
+		$ctx.find('.fcf-field[data-conditions]').filter(notInTemplate).each(function () {
+			var $field = $(this);
+			var groups = $field.data('conditions') || [];
+
+			var show = groups.some(function (rules) {
+				return rules.every(function (rule) {
+					var $target = $field.siblings('.fcf-field[data-key="' + rule.field + '"]');
+					return $target.length && !$target.hasClass('fcf-logic-hidden') && ruleMatches(rule, fieldValue($target));
+				});
+			});
+
+			$field.toggleClass('fcf-logic-hidden', !show);
+			// Disabled inputs are not submitted, so a hidden field keeps its saved value.
+			$field.find('input, select, textarea, button').filter(notInTemplate).each(function () {
+				$(this).prop('disabled', !!$(this).closest('.fcf-logic-hidden').length);
+			});
+		});
+	}
+
+	$(document).on('change input', '.fcf-fields :input', function () {
+		$(this).closest('.fcf-field').removeClass('fcf-has-error');
+		applyLogic($(this).closest('.fcf-fields'));
+	});
+
+	/* ---------- Required fields the browser cannot check ---------- */
+
+	var JS_REQUIRED = ['checkbox', 'wysiwyg', 'color', 'image', 'gallery', 'file'];
+
+	$(document).on('submit', '#post, #fcf-options-form', function (e) {
+		var $missing = $('.fcf-fields .fcf-field.is-required').filter(notInTemplate).filter(function () {
+			var $field = $(this);
+			var value = fieldValue($field);
+			return JS_REQUIRED.indexOf($field.data('type')) !== -1 &&
+				!$field.closest('.fcf-logic-hidden').length &&
+				($.isArray(value) ? !value.length : !String(value).trim());
+		});
+
+		if (!$missing.length) {
+			return;
+		}
+
+		e.preventDefault();
+		$missing.addClass('fcf-has-error');
+		window.alert(i18n.required + '\n- ' + $missing.map(function () {
+			return $.trim($(this).children('.fcf-label').text().replace(/\*$/, ''));
+		}).get().join('\n- '));
+		$('#publishing-action .spinner, #save-action .spinner').removeClass('is-active');
+		$('#publish, #save-post').removeClass('disabled');
+		$('html, body').animate({ scrollTop: $missing.first().offset().top - 80 }, 200);
+	});
+
 	/* ---------- Boot ---------- */
 
 	// The block editor moves meta boxes out of the hidden #metaboxes container after load;
@@ -279,6 +457,7 @@
 			if (!$box.closest('#metaboxes').length) {
 				$box.data('fcfBooted', 1);
 				init($box);
+				applyLogic($box);
 			}
 		});
 		if (mountTries < 200 && $pending.filter(function () { return !$(this).data('fcfBooted'); }).length) {

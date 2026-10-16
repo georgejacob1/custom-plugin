@@ -1,5 +1,76 @@
+/* Fields flow in a row so "width" wrapper attributes can sit side by side. */
+.fcf-fields,
+.fcf-row-fields {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+}
+
 .fcf-fields .fcf-field {
+	box-sizing: border-box;
+	width: 100%;
 	margin: 0 0 18px;
+}
+
+.fcf-fields .fcf-field[style*="width"] {
+	padding-right: 12px;
+}
+
+.fcf-fields .fcf-field.fcf-logic-hidden {
+	display: none;
+}
+
+.fcf-fields .fcf-field.fcf-has-error > .fcf-label {
+	color: #d63638;
+}
+
+.fcf-fields .fcf-field.fcf-has-error > .fcf-input {
+	padding: 6px;
+	border-left: 3px solid #d63638;
+	background: #fcf0f1;
+}
+
+/* Prepend / append */
+.fcf-input-group {
+	display: flex;
+	align-items: stretch;
+}
+
+.fcf-input-group input {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+}
+
+.fcf-input-prepend,
+.fcf-input-append {
+	display: flex;
+	align-items: center;
+	padding: 0 10px;
+	border: 1px solid #8c8f94;
+	background: #f6f7f7;
+	color: #50575e;
+	white-space: nowrap;
+}
+
+.fcf-input-prepend {
+	border-right: 0;
+	border-radius: 4px 0 0 4px;
+}
+
+.fcf-input-append {
+	border-left: 0;
+	border-radius: 0 4px 4px 0;
+}
+
+.fcf-input-group .fcf-input-prepend + input {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+}
+
+.fcf-input-group input:not(:last-child) {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
 }
 
 .fcf-fields .fcf-field:last-child {

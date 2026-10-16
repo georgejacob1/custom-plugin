@@ -7,11 +7,15 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Resolve a post ID, defaulting to the current post.
+ * 'option' / 'options' resolve to 'option' (values of options pages).
  *
- * @param int|WP_Post|null $post_id Post.
- * @return int
+ * @param int|string|WP_Post|null $post_id Post.
+ * @return int|string
  */
 function fcf_resolve_post_id( $post_id = null ) {
+	if ( 'option' === $post_id || 'options' === $post_id ) {
+		return 'option';
+	}
 	if ( $post_id instanceof WP_Post ) {
 		return $post_id->ID;
 	}
@@ -25,8 +29,8 @@ function fcf_resolve_post_id( $post_id = null ) {
  * files an array (ID, url, filename...), repeaters an array of rows.
  *
  * @param string   $name    Field name.
- * @param int|null $post_id Post ID, defaults to the current post.
- * @param bool     $format  False returns the raw stored value.
+ * @param int|string|null $post_id Post ID (defaults to the current post), or 'option' for options pages.
+ * @param bool            $format  False returns the raw stored value.
  * @return mixed
  */
 function fcf_get_field( $name, $post_id = null, $format = true ) {
@@ -36,7 +40,11 @@ function fcf_get_field( $name, $post_id = null, $format = true ) {
 	}
 
 	$field = FCF_Field_Groups::find_field( $name, $post_id );
-	$value = metadata_exists( 'post', $post_id, $name ) ? get_post_meta( $post_id, $name, true ) : null;
+	if ( 'option' === $post_id ) {
+		$value = FCF_Options_Pages::get_value( $name );
+	} else {
+		$value = metadata_exists( 'post', $post_id, $name ) ? get_post_meta( $post_id, $name, true ) : null;
+	}
 
 	if ( null === $value && $field && 'repeater' !== $field['type'] && '' !== $field['default_value'] ) {
 		$value = $field['default_value'];
@@ -50,21 +58,23 @@ function fcf_get_field( $name, $post_id = null, $format = true ) {
 }
 
 /**
- * Get all field values for a post.
+ * Get all field values for a post, or of all options pages with 'option'.
  *
- * @param int|null $post_id Post ID.
+ * @param int|string|null $post_id Post ID or 'option'.
  * @return array name => value
  */
 function fcf_get_fields( $post_id = null ) {
 	$post_id = fcf_resolve_post_id( $post_id );
-	$post    = get_post( $post_id );
 	$values  = array();
 
-	if ( ! $post ) {
-		return $values;
+	if ( 'option' === $post_id ) {
+		$groups = FCF_Options_Pages::all_option_groups();
+	} else {
+		$post   = get_post( $post_id );
+		$groups = $post ? FCF_Field_Groups::groups_for_post( $post, false ) : array();
 	}
 
-	foreach ( FCF_Field_Groups::groups_for_post( $post, false ) as $group ) {
+	foreach ( $groups as $group ) {
 		foreach ( $group['fields'] as $field ) {
 			$values[ $field['name'] ] = fcf_get_field( $field['name'], $post_id );
 		}
@@ -110,18 +120,23 @@ function fcf_field_html( $name, $post_id = null, $size = 'large' ) {
 		case 'true_false':
 			return $value ? '1' : '';
 
+		// Media is rendered from the stored IDs, whatever the field's return format.
 		case 'image':
-			return $value ? wp_get_attachment_image( $value['ID'], $size ) : '';
+			$att_id = absint( fcf_get_field( $name, $post_id, false ) );
+			return $att_id ? wp_get_attachment_image( $att_id, $size ) : '';
 
 		case 'gallery':
+			$raw  = fcf_get_field( $name, $post_id, false );
 			$html = '';
-			foreach ( (array) $value as $image ) {
-				$html .= wp_get_attachment_image( $image['ID'], $size );
+			foreach ( array_filter( array_map( 'absint', is_array( $raw ) ? $raw : explode( ',', (string) $raw ) ) ) as $att_id ) {
+				$html .= wp_get_attachment_image( $att_id, $size );
 			}
 			return $html;
 
 		case 'file':
-			return $value ? sprintf( '<a href="%s">%s</a>', esc_url( $value['url'] ), esc_html( $value['filename'] ) ) : '';
+			$att_id = absint( fcf_get_field( $name, $post_id, false ) );
+			$file   = $att_id ? get_attached_file( $att_id ) : '';
+			return $file ? sprintf( '<a href="%s">%s</a>', esc_url( wp_get_attachment_url( $att_id ) ), esc_html( wp_basename( $file ) ) ) : '';
 
 		case 'select':
 		case 'radio':
@@ -143,7 +158,7 @@ function fcf_field_html( $name, $post_id = null, $size = 'large' ) {
 }
 
 /**
- * Shortcode: [fcf field="name" post_id="123" size="large"]
+ * Shortcode: [fcf field="name" post_id="123" size="large"], post_id="option" for options pages.
  *
  * @param array $atts Attributes.
  * @return string
@@ -163,7 +178,9 @@ function fcf_shortcode( $atts ) {
 		return '';
 	}
 
-	return fcf_field_html( sanitize_key( $atts['field'] ), $atts['post_id'] ? absint( $atts['post_id'] ) : null, sanitize_key( $atts['size'] ) );
+	$post_id = in_array( $atts['post_id'], array( 'option', 'options' ), true ) ? 'option' : absint( $atts['post_id'] );
+
+	return fcf_field_html( sanitize_key( $atts['field'] ), $post_id ? $post_id : null, sanitize_key( $atts['size'] ) );
 }
 
 /*
@@ -269,4 +286,30 @@ function fcf_the_sub_field( $name ) {
 	} elseif ( is_scalar( $value ) ) {
 		echo wp_kses_post( $value );
 	}
+}
+
+/**
+ * Register an options page in code (it can also be created in Custom Fields → Options Pages).
+ * Call it on or before the 'admin_menu' hook, e.g. from 'init'.
+ *
+ * fcf_add_options_page( array( 'page_title' => 'Common Content', 'menu_slug' => 'common-content' ) );
+ * fcf_get_field( 'footer_text', 'option' );
+ *
+ * @param array|string $args Page title, or array: page_title, menu_title, menu_slug, parent_slug,
+ *                           capability (default edit_posts), position, icon_url.
+ * @return array The page.
+ */
+function fcf_add_options_page( $args = array() ) {
+	return FCF_Options_Pages::add( is_string( $args ) ? array( 'page_title' => $args ) : $args );
+}
+
+/**
+ * Register an options page under another one (default parent: Settings).
+ *
+ * @param array|string $args Same as fcf_add_options_page().
+ * @return array The page.
+ */
+function fcf_add_options_sub_page( $args = array() ) {
+	$args = is_string( $args ) ? array( 'page_title' => $args ) : $args;
+	return FCF_Options_Pages::add( wp_parse_args( $args, array( 'parent_slug' => 'options-general.php' ) ) );
 }

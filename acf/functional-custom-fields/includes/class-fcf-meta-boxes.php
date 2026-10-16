@@ -85,17 +85,18 @@ class FCF_Meta_Boxes {
 			return;
 		}
 
-		$used = false;
-		foreach ( FCF_Field_Groups::all_groups() as $group ) {
-			if ( in_array( $screen->post_type, $group['post_types'], true ) ) {
-				$used = true;
-				break;
-			}
-		}
-		if ( ! $used ) {
+		$post = get_post();
+		if ( ! $post || ! FCF_Field_Groups::groups_for_post( $post, false ) ) {
 			return;
 		}
 
+		self::enqueue_assets();
+	}
+
+	/**
+	 * Scripts and styles of the field inputs (post screens and options pages).
+	 */
+	public static function enqueue_assets() {
 		wp_enqueue_media();
 		wp_enqueue_editor();
 		wp_enqueue_style( 'wp-color-picker' );
@@ -115,6 +116,22 @@ class FCF_Meta_Boxes {
 					/* translators: %d: number of rows */
 					'minRows'      => __( 'Minimum rows required (%d).', 'functional-custom-fields' ),
 					'removeRow'    => __( 'Remove this row?', 'functional-custom-fields' ),
+					'required'     => __( 'Please fill in the required fields:', 'functional-custom-fields' ),
+					'invalidFile'  => __( 'This file does not meet the field requirements:', 'functional-custom-fields' ),
+					/* translators: %s: allowed extensions */
+					'fileType'     => __( 'File type must be: %s.', 'functional-custom-fields' ),
+					/* translators: %s: size in MB */
+					'minSize'      => __( 'File size must be at least %s MB.', 'functional-custom-fields' ),
+					/* translators: %s: size in MB */
+					'maxSize'      => __( 'File size must not exceed %s MB.', 'functional-custom-fields' ),
+					/* translators: %d: pixels */
+					'minWidth'     => __( 'Image width must be at least %dpx.', 'functional-custom-fields' ),
+					/* translators: %d: pixels */
+					'minHeight'    => __( 'Image height must be at least %dpx.', 'functional-custom-fields' ),
+					/* translators: %d: pixels */
+					'maxWidth'     => __( 'Image width must not exceed %dpx.', 'functional-custom-fields' ),
+					/* translators: %d: pixels */
+					'maxHeight'    => __( 'Image height must not exceed %dpx.', 'functional-custom-fields' ),
 				),
 			)
 		);
