@@ -1,0 +1,37 @@
+.bs3o .bs3o-counts {
+	max-width: 420px;
+	margin: 16px 0;
+}
+
+.bs3o .bs3o-counts th {
+	width: 50%;
+	font-weight: 600;
+}
+
+.bs3o .bs3o-progress {
+	max-width: 600px;
+	height: 14px;
+	background: #dcdcde;
+	border-radius: 7px;
+	overflow: hidden;
+}
+
+.bs3o .bs3o-progress-bar {
+	height: 100%;
+	background: #2271b1;
+	transition: width 0.3s ease;
+}
+
+.bs3o .bs3o-errors {
+	max-height: 300px;
+	overflow: auto;
+	color: #b32d2e;
+}
+
+.bs3o .bs3o-ok {
+	color: #008a20;
+}
+
+.bs3o .bs3o-err {
+	color: #b32d2e;
+}

@@ -1,0 +1,28 @@
+{
+	"name": "benzy/benzy-s3-offload",
+	"description": "Offload the WordPress Media Library to Amazon S3.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"require": {
+		"php": ">=8.1",
+		"aws/aws-sdk-php": "^3.300"
+	},
+	"config": {
+		"platform": {
+			"php": "8.1.0"
+		},
+		"optimize-autoloader": true,
+		"sort-packages": true
+	},
+	"scripts": {
+		"pre-autoload-dump": "Aws\\Script\\Composer\\Composer::removeUnusedServices"
+	},
+	"extra": {
+		"aws/aws-sdk-php": [
+			"S3",
+			"Sts",
+			"SSO",
+			"SSOOIDC"
+		]
+	}
+}

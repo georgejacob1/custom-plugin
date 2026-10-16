@@ -1,2 +1,5 @@
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# Composer deps are shipped inside the release zip, not committed.
+s3/benzy-s3-offload/vendor/
