@@ -6,6 +6,8 @@ Lightweight custom fields for WordPress. Build field groups in wp-admin and atta
 
 Text, Text Area, WYSIWYG Editor, Number, Email, URL, Select, Checkbox, Radio Buttons, True / False, Date, Color Picker, Image, Gallery, File, Repeater (sub fields of any type, nesting allowed).
 
+Layout: **Tab** groups the fields that follow it (up to the next tab) under a tab. Tabs can be placed on top or on the left; turn on **New Tab Group** on a tab to start a separate row of tabs. Tabs store no value. Inside repeaters, tabs work in the Block and Row layouts.
+
 ## Install
 
 1. Upload the `functional-custom-fields` folder to `wp-content/plugins/` (or upload the zip via **Plugins → Add New → Upload Plugin**).
@@ -45,6 +47,15 @@ add_action( 'init', function () {
 	fcf_add_options_sub_page( array( 'page_title' => 'Footer', 'parent_slug' => 'common-content' ) );
 } );
 ```
+
+## Import / export
+
+**Custom Fields → Tools**:
+
+- **Export**: tick field groups and options pages, then **Export As JSON** (download a file to import on another site) or **Generate PHP** (code for your theme that registers them with `fcf_add_options_page()` and `fcf_add_local_field_group()`).
+- **Import**: choose a `.json` file and click **Import JSON**. Files exported by this plugin **or by ACF** work: ACF field settings are converted (date picker → Date, color picker → Color, group → one-row repeater…); unsupported ACF types (relationship, post object, flexible content…) are skipped and listed. Items whose key already exists are updated, not duplicated.
+
+Field values are not included in exports.
 
 ## Field settings
 

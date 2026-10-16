@@ -76,6 +76,9 @@ function fcf_get_fields( $post_id = null ) {
 
 	foreach ( $groups as $group ) {
 		foreach ( $group['fields'] as $field ) {
+			if ( 'tab' === $field['type'] ) {
+				continue;
+			}
 			$values[ $field['name'] ] = fcf_get_field( $field['name'], $post_id );
 		}
 	}
@@ -312,4 +315,15 @@ function fcf_add_options_page( $args = array() ) {
 function fcf_add_options_sub_page( $args = array() ) {
 	$args = is_string( $args ) ? array( 'page_title' => $args ) : $args;
 	return FCF_Options_Pages::add( wp_parse_args( $args, array( 'parent_slug' => 'options-general.php' ) ) );
+}
+
+/**
+ * Register a field group in code. Takes the same shape as a JSON export item
+ * (Custom Fields → Tools → Generate PHP writes these calls for you).
+ * Call it on 'init' or earlier. A group imported with the same key overrides it.
+ *
+ * @param array $group key, title, fields, location, menu_order, position, description.
+ */
+function fcf_add_local_field_group( $group ) {
+	FCF_Field_Groups::add_local( $group );
 }

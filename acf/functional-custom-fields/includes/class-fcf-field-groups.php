@@ -12,6 +12,23 @@ class FCF_Field_Groups {
 	/** @var array|null Cached published groups. */
 	protected static $groups = null;
 
+	/** @var array Groups registered in code with fcf_add_local_field_group(). key => group */
+	protected static $local = array();
+
+	/**
+	 * Register a field group in code (same shape as a JSON export item).
+	 *
+	 * @param array $group key, title, fields, location, menu_order, position, description.
+	 */
+	public static function add_local( $group ) {
+		if ( ! is_array( $group ) || empty( $group['fields'] ) ) {
+			return;
+		}
+		$key                 = isset( $group['key'] ) && '' !== $group['key'] ? sanitize_key( $group['key'] ) : 'group_' . md5( wp_json_encode( $group ) );
+		self::$local[ $key ] = $group;
+		self::$groups        = null;
+	}
+
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_post_type' ) );
 		add_action( 'add_meta_boxes_' . self::POST_TYPE, array( __CLASS__, 'add_meta_boxes' ) );
@@ -412,14 +429,47 @@ class FCF_Field_Groups {
 			)
 		);
 
+		$keys = array();
 		foreach ( $posts as $group ) {
+			$key = (string) get_post_meta( $group->ID, '_fcf_key', true );
+			if ( '' !== $key ) {
+				$keys[ $key ] = true;
+			}
 			self::$groups[] = array(
 				'id'         => $group->ID,
 				'title'      => $group->post_title,
 				'fields'     => self::get_fields( $group->ID ),
 				'location'   => FCF_Location::get( $group->ID ),
 				'position'   => 'side' === get_post_meta( $group->ID, '_fcf_position', true ) ? 'side' : 'normal',
+				'menu_order' => (int) $group->menu_order,
 			);
+		}
+
+		// Code groups; a database group with the same key (e.g. imported) takes precedence.
+		foreach ( self::$local as $key => $group ) {
+			if ( isset( $keys[ $key ] ) ) {
+				continue;
+			}
+			self::$groups[] = array(
+				'id'         => $key,
+				'title'      => isset( $group['title'] ) ? (string) $group['title'] : '',
+				'fields'     => FCF_Fields::sanitize_definitions( FCF_Tools::convert_fields( $group['fields'] ) ),
+				'location'   => FCF_Location::sanitize( isset( $group['location'] ) ? $group['location'] : array() ),
+				'position'   => isset( $group['position'] ) && 'side' === $group['position'] ? 'side' : 'normal',
+				'menu_order' => isset( $group['menu_order'] ) ? (int) $group['menu_order'] : 0,
+			);
+		}
+
+		if ( self::$local ) {
+			$order = array_flip( array_keys( self::$groups ) );
+			uksort(
+				self::$groups,
+				function ( $a, $b ) use ( $order ) {
+					$diff = self::$groups[ $a ]['menu_order'] - self::$groups[ $b ]['menu_order'];
+					return $diff ? $diff : $order[ $a ] - $order[ $b ];
+				}
+			);
+			self::$groups = array_values( self::$groups );
 		}
 
 		return self::$groups;

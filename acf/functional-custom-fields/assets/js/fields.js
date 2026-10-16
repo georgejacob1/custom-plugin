@@ -52,9 +52,107 @@
 		$(textarea).data('fcfInit', 0);
 	}
 
+	/* ---------- Tabs ---------- */
+
+	// Tab fields are markers: the fields after one (up to the next tab) belong to it.
+	// A tab marked "endpoint" starts a new tab group.
+	function initTabs($ctx) {
+		$ctx.find('.fcf-fields, .fcf-row-fields').addBack('.fcf-fields, .fcf-row-fields').filter(notInTemplate).each(function () {
+			var $container = $(this);
+			if ($container.data('fcfTabs')) {
+				return;
+			}
+			$container.data('fcfTabs', 1);
+
+			var group = null;
+			$container.children('.fcf-field').each(function () {
+				var $field = $(this);
+
+				if (!$field.hasClass('fcf-type-tab')) {
+					if (group) {
+						group.tabs[group.tabs.length - 1].$fields.push(this);
+						$field.addClass('fcf-in-tab').toggleClass('fcf-in-tab-left', group.left);
+					}
+					return;
+				}
+
+				if (!group || parseInt($field.data('endpoint'), 10)) {
+					group = { left: $field.data('placement') === 'left', tabs: [] };
+					group.$nav = $('<ul class="fcf-tab-nav" role="tablist">');
+					group.$wrap = $('<div class="fcf-tab-wrap">')
+						.addClass(group.left ? 'fcf-tabs-left' : 'fcf-tabs-top')
+						.append(group.$nav)
+						.insertBefore($field);
+				}
+
+				var tab = { $fields: [], $button: null };
+				var index = group.tabs.length;
+				var current = group;
+				tab.$button = $('<button type="button" class="fcf-tab-button" role="tab">').text($field.data('label'));
+				tab.$button.on('click', function (e) {
+					e.preventDefault();
+					// Keep the clicked tab where it is on screen while the content height changes.
+					var before = this.getBoundingClientRect().top;
+					activateTab(current, index);
+					var shift = this.getBoundingClientRect().top - before;
+					if (shift) {
+						window.scrollBy(0, shift);
+					}
+				});
+				current.$nav.append($('<li>').append(tab.$button));
+				current.tabs.push(tab);
+			});
+		});
+
+		// Activate the first tab of every new group.
+		$ctx.find('.fcf-tab-wrap').addBack('.fcf-tab-wrap').filter(function () {
+			return !$(this).data('fcfActive') && notInTemplate.call(this);
+		}).each(function () {
+			$(this).find('> .fcf-tab-nav > li:first-child > .fcf-tab-button').trigger('click');
+		});
+	}
+
+	function activateTab(group, index) {
+		group.$wrap.data('fcfActive', 1);
+		$.each(group.tabs, function (i, tab) {
+			var on = i === index;
+			tab.$button.toggleClass('is-active', on).attr('aria-selected', on ? 'true' : 'false');
+			$.each(tab.$fields, function (j, el) {
+				$(el).toggleClass('fcf-tab-hidden', !on).removeClass('fcf-tab-first').css('min-height', '');
+				$(el).data('fcfShowTab', function () {
+					activateTab(group, i);
+				});
+			});
+		});
+
+		var $visible = $(group.tabs[index].$fields).filter(':not(.fcf-logic-hidden)');
+		$visible.first().addClass('fcf-tab-first');
+		// Left tabs: the first field is at least as tall as the tab list.
+		if (group.left) {
+			$visible.first().css('min-height', group.$nav.outerHeight());
+		}
+	}
+
+	// Reveal the tab(s) holding a field, e.g. one that failed validation.
+	function showTabsOf(el) {
+		$($(el).parents('.fcf-tab-hidden').get().reverse()).each(function () {
+			var show = $(this).data('fcfShowTab');
+			if (show) {
+				show();
+			}
+		});
+	}
+
+	document.addEventListener('invalid', function (e) {
+		if ($(e.target).closest('.fcf-tab-hidden').length) {
+			showTabsOf(e.target);
+		}
+	}, true);
+
 	/* ---------- Init ---------- */
 
 	function init($ctx) {
+		initTabs($ctx);
 		$ctx.find('.fcf-color').filter(notInTemplate).each(function () {
 			if (!$(this).data('fcfInit')) {
 				$(this).data('fcfInit', 1).wpColorPicker({
@@ -95,7 +193,7 @@
 			}
 			$rep.data('fcfInit', 1);
 
-			$rep.children('.fcf-rows').sortable({
+			$rep.find('> .fcf-repeater-table > .fcf-rows').sortable({
 				handle: '.fcf-row-handle',
 				items: '> .fcf-row',
 				axis: 'y',
@@ -116,7 +214,7 @@
 			});
 
 			var min = parseInt($rep.data('min'), 10) || 0;
-			while ($rep.children('.fcf-rows').children('.fcf-row').length < min) {
+			while ($rep.find('> .fcf-repeater-table > .fcf-rows').children('.fcf-row').length < min) {
 				addRow($rep);
 			}
 			refreshRepeater($rep);
@@ -131,7 +229,7 @@
 		var html = $rep.children('.fcf-row-template').html().split('__IDX_' + key + '__').join(index);
 		var $row = $($.parseHTML(html, document, false)).filter('.fcf-row');
 
-		$rep.children('.fcf-rows').append($row);
+		$rep.find('> .fcf-repeater-table > .fcf-rows').append($row);
 		init($row);
 		refreshRepeater($rep);
 		applyLogic($rep.closest('.fcf-fields'));
@@ -139,14 +237,14 @@
 	}
 
 	function refreshRepeater($rep) {
-		var $rows = $rep.children('.fcf-rows').children('.fcf-row');
+		var $rows = $rep.find('> .fcf-repeater-table > .fcf-rows').children('.fcf-row');
 		var max = parseInt($rep.data('max'), 10) || 0;
 
 		$rows.each(function (i) {
 			$(this).children('.fcf-row-handle').find('.fcf-row-index').first().text(i + 1);
 		});
 		$rep.toggleClass('is-empty', !$rows.length);
-		$rep.children('.fcf-add-row').prop('disabled', max > 0 && $rows.length >= max);
+		$rep.find('> .fcf-repeater-footer > .fcf-add-row').prop('disabled', max > 0 && $rows.length >= max);
 	}
 
 	$(document).on('click', '.fcf-add-row', function (e) {
@@ -154,7 +252,7 @@
 		var $rep = $(this).closest('.fcf-repeater');
 		var max = parseInt($rep.data('max'), 10) || 0;
 
-		if (max && $rep.children('.fcf-rows').children('.fcf-row').length >= max) {
+		if (max && $rep.find('> .fcf-repeater-table > .fcf-rows').children('.fcf-row').length >= max) {
 			window.alert(i18n.maxRows.replace('%d', max));
 			return;
 		}
@@ -167,7 +265,7 @@
 		var $rep = $row.closest('.fcf-repeater');
 		var min = parseInt($rep.data('min'), 10) || 0;
 
-		if (min && $rep.children('.fcf-rows').children('.fcf-row').length <= min) {
+		if (min && $rep.find('> .fcf-repeater-table > .fcf-rows').children('.fcf-row').length <= min) {
 			window.alert(i18n.minRows.replace('%d', min));
 			return;
 		}
@@ -247,6 +345,11 @@
 		}
 		return errors.length > 0;
 	}
+
+	// The empty placeholder opens the picker too.
+	$(document).on('click', '.fcf-media-empty', function () {
+		$(this).closest('.fcf-media').find('.fcf-image-select').first().trigger('click');
+	});
 
 	$(document).on('click', '.fcf-image-select', function (e) {
 		e.preventDefault();
@@ -353,7 +456,7 @@
 				}
 				return ta ? ta.value : '';
 			case 'repeater':
-				return $input.find('> .fcf-repeater > .fcf-rows > .fcf-row').length ? '1' : '';
+				return $input.find('> .fcf-repeater > .fcf-repeater-table > .fcf-rows > .fcf-row').length ? '1' : '';
 			default:
 				return $input.find('.fcf-value, input:not([type="hidden"]), select, textarea').first().val() || '';
 		}
@@ -432,6 +535,7 @@
 		}
 
 		e.preventDefault();
+		showTabsOf($missing.first());
 		$missing.addClass('fcf-has-error');
 		window.alert(i18n.required + '\n- ' + $missing.map(function () {
 			return $.trim($(this).children('.fcf-label').text().replace(/\*$/, ''));

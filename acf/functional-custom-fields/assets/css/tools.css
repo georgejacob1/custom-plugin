@@ -1,0 +1,140 @@
+.fcf-tools-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 24px;
+	align-items: start;
+	margin-top: 16px;
+}
+
+.fcf-tools-card {
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	background: #fff;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
+}
+
+.fcf-tools-card-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 24px;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.fcf-tools-card-head h2 {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	font-size: 15px;
+	font-weight: 500;
+	color: #1d2327;
+}
+
+.fcf-tools-card-head h2 .dashicons {
+	color: #8c8f94;
+}
+
+.fcf-tools-help {
+	color: #8c8f94;
+	cursor: help;
+}
+
+.fcf-tools-card-body {
+	padding: 8px 24px 24px;
+}
+
+.fcf-tools-label {
+	margin: 20px 0 12px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.fcf-tools-box {
+	padding: 16px 18px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+}
+
+.fcf-tools-checks {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 10px 16px;
+	margin: 0;
+}
+
+.fcf-tools-checks li {
+	margin: 0;
+}
+
+.fcf-tools-checks label {
+	display: flex;
+	align-items: flex-start;
+	gap: 6px;
+	color: #3c434a;
+}
+
+.fcf-tools-checks input[type="checkbox"] {
+	margin: 1px 0 0;
+}
+
+.fcf-tools-muted,
+.fcf-tools-empty {
+	color: #8c8f94;
+}
+
+.fcf-tools-empty {
+	margin: 0;
+}
+
+.fcf-tools-card-body > .description {
+	margin: 10px 0 0;
+}
+
+.fcf-tools-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 24px;
+}
+
+.fcf-tools-actions .button {
+	min-height: 36px;
+	padding: 0 16px;
+}
+
+.fcf-tools-php {
+	margin-top: 24px;
+}
+
+.fcf-tools-php textarea {
+	box-sizing: border-box;
+	width: 100%;
+	margin: 8px 0;
+	padding: 12px;
+	border-radius: 6px;
+	background: #f6f7f7;
+	font-size: 12px;
+	line-height: 1.6;
+	tab-size: 4;
+	white-space: pre;
+}
+
+@media (max-width: 1100px) {
+	.fcf-tools-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+@media (max-width: 600px) {
+	.fcf-tools-checks {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.fcf-tools-card-head,
+	.fcf-tools-card-body {
+		padding-left: 16px;
+		padding-right: 16px;
+	}
+}

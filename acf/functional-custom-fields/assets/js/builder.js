@@ -24,7 +24,8 @@
 		image: 'format-image',
 		gallery: 'format-gallery',
 		file: 'media-default',
-		repeater: 'list-view'
+		repeater: 'list-view',
+		tab: 'index-card'
 	};
 	var TABS = {
 		general: 'General',
@@ -34,7 +35,7 @@
 	};
 	var DEFAULTS = {
 		key: '', label: '', name: '', type: 'text', instructions: '', required: 0,
-		default_value: '', placeholder: '', choices: '', min: '', max: '', button_label: '',
+		default_value: '', placeholder: '', choices: '', min: '', max: '', button_label: '', layout: 'table', placement: 'top', endpoint: 0,
 		maxlength: '', prepend: '', append: '', return_format: 'array', library: 'all', preview_size: 'medium',
 		min_width: '', min_height: '', min_size: '', max_width: '', max_height: '', max_size: '', mime_types: '',
 		wrapper_width: '', wrapper_class: '', wrapper_id: '', conditional_logic: [], sub_fields: []
@@ -82,6 +83,9 @@
 		}
 		if (opts.types) {
 			$s.attr('data-types', opts.types);
+		}
+		if (opts.notTypes) {
+			$s.attr('data-not-types', opts.notTypes);
 		}
 		return $s;
 	}
@@ -153,7 +157,16 @@
 			section(
 				setting('Field Label', text('label'), { desc: 'This is the name which will appear on the EDIT page' }),
 				setting('Field Name', text('name', { 'class': 'fcf-b-input code' }), {
-					desc: 'Single word, no spaces. Underscores allowed. Use in code: <code class="fcf-b-usage"></code>'
+					desc: 'Single word, no spaces. Underscores allowed. Use in code: <code class="fcf-b-usage"></code>',
+					notTypes: 'tab'
+				}),
+				setting('Placement', radios('placement', { top: 'Top aligned', left: 'Left aligned' }), {
+					desc: 'Fields below this tab (up to the next tab) are shown when the tab is selected.',
+					types: 'tab'
+				}),
+				setting('', toggle('New Tab Group', $('<input type="checkbox">').attr('data-prop', 'endpoint')), {
+					desc: 'Start a new row of tabs here instead of continuing the previous one.',
+					types: 'tab'
 				}),
 				setting('Choices', textarea('choices', 5), {
 					desc: 'Enter each choice on a new line. Use <code>value : Label</code> to set both.',
@@ -224,11 +237,15 @@
 	function presentationTab() {
 		return [
 			section(
-				setting('Instructions', textarea('instructions', 3), { desc: 'Instructions for authors. Shown when submitting data' }),
+				setting('Instructions', textarea('instructions', 3), { desc: 'Instructions for authors. Shown when submitting data', notTypes: 'tab' }),
 				setting('Placeholder Text', text('placeholder'), { desc: 'Appears within the input', types: 'text,textarea,number,email,url' }),
 				setting('Prepend', text('prepend'), { desc: 'Appears before the input', types: 'text,number,email,url' }),
 				setting('Append', text('append'), { desc: 'Appears after the input', types: 'text,number,email,url' }),
 				setting('Preview Size', select('preview_size', SIZES), { types: 'image' }),
+				setting('Layout', radios('layout', { table: 'Table (horizontal)', block: 'Block (vertical)', row: 'Row (labels on the left)' }), {
+					desc: 'How the sub fields of each row are laid out',
+					types: 'repeater'
+				}),
 				setting('Button Label', text('button_label', { placeholder: 'Add Row' }), { types: 'repeater' })
 			),
 			section(
@@ -236,7 +253,7 @@
 					{ before: 'width', prop: 'wrapper_width', after: '%', number: true },
 					{ before: 'class', prop: 'wrapper_class' },
 					{ before: 'id', prop: 'wrapper_id' }
-				]))
+				]), { notTypes: 'tab' })
 			)
 		];
 	}
@@ -278,7 +295,9 @@
 
 	// Rules can target the other fields on the same level.
 	function populateRuleFields($li) {
-		var targets = $li.siblings('.fcf-b-field').map(function () {
+		var targets = $li.siblings('.fcf-b-field').filter(function () {
+			return own($(this), '[data-prop="type"]').val() !== 'tab';
+		}).map(function () {
 			var $s = $(this);
 			return {
 				key: $s.attr('data-key'),
@@ -439,6 +458,22 @@
 			var show = $(this).attr('data-types').split(',').indexOf(type) !== -1;
 			$(this).toggle(show).find('[data-prop]').prop('disabled', !show);
 		});
+		own($li, '[data-not-types]').each(function () {
+			var show = $(this).attr('data-not-types').split(',').indexOf(type) === -1;
+			$(this).toggle(show).find('[data-prop]').prop('disabled', !show);
+		});
+
+		// Tabs only have general settings.
+		var isTab = type === 'tab';
+		$li.toggleClass('fcf-b-is-tab', isTab);
+		if (isTab) {
+			$li.find('> .fcf-b-head .fcf-b-name').text('');
+		}
+		var $tabs = $li.find('> .fcf-b-body > .fcf-b-tabs > .fcf-b-tab');
+		$tabs.not('[data-tab="general"]').toggle(!isTab);
+		if (isTab && !$tabs.filter('.is-active').is('[data-tab="general"]')) {
+			$tabs.filter('[data-tab="general"]').trigger('click');
+		}
 
 		updateEmpty();
 	}

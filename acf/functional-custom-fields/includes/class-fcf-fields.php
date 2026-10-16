@@ -30,6 +30,7 @@ class FCF_Fields {
 			'gallery'    => __( 'Gallery', 'functional-custom-fields' ),
 			'file'       => __( 'File', 'functional-custom-fields' ),
 			'repeater'   => __( 'Repeater', 'functional-custom-fields' ),
+			'tab'        => __( 'Tab', 'functional-custom-fields' ),
 		);
 	}
 
@@ -52,6 +53,9 @@ class FCF_Fields {
 			'min'               => '',
 			'max'               => '',
 			'button_label'      => '',
+			'layout'            => 'table',
+			'placement'         => 'top',
+			'endpoint'          => 0,
 			'maxlength'         => '',
 			'prepend'           => '',
 			'append'            => '',
@@ -158,22 +162,27 @@ class FCF_Fields {
 
 			$type  = isset( $f['type'], $types[ $f['type'] ] ) ? $f['type'] : 'text';
 			$label = sanitize_text_field( isset( $f['label'] ) ? $f['label'] : '' );
-			$name  = self::sanitize_name( isset( $f['name'] ) && '' !== $f['name'] ? $f['name'] : $label );
-			if ( '' === $name ) {
-				continue;
-			}
-
-			// Keep names unique on the same level.
-			$base = $name;
-			$n    = 2;
-			while ( isset( $used[ $name ] ) ) {
-				$name = $base . '_' . $n++;
-			}
-			$used[ $name ] = true;
-
 			$key = isset( $f['key'] ) ? preg_replace( '/[^a-z0-9_]/', '', strtolower( $f['key'] ) ) : '';
 			if ( '' === $key ) {
 				$key = 'field_' . strtolower( wp_generate_password( 10, false, false ) );
+			}
+
+			if ( 'tab' === $type ) {
+				// Tabs only arrange the screen; they store nothing, so their name never clashes with a real field.
+				$name = $key;
+			} else {
+				$name = self::sanitize_name( isset( $f['name'] ) && '' !== $f['name'] ? $f['name'] : $label );
+				if ( '' === $name ) {
+					continue;
+				}
+
+				// Keep names unique on the same level.
+				$base = $name;
+				$n    = 2;
+				while ( isset( $used[ $name ] ) ) {
+					$name = $base . '_' . $n++;
+				}
+				$used[ $name ] = true;
 			}
 
 			$field = array(
@@ -189,6 +198,9 @@ class FCF_Fields {
 				'min'           => isset( $f['min'] ) && is_numeric( $f['min'] ) ? $f['min'] + 0 : '',
 				'max'           => isset( $f['max'] ) && is_numeric( $f['max'] ) ? $f['max'] + 0 : '',
 				'button_label'  => sanitize_text_field( isset( $f['button_label'] ) ? $f['button_label'] : '' ),
+				'layout'        => isset( $f['layout'] ) && in_array( $f['layout'], array( 'table', 'block', 'row' ), true ) ? $f['layout'] : 'table',
+				'placement'     => isset( $f['placement'] ) && 'left' === $f['placement'] ? 'left' : 'top',
+				'endpoint'      => ! empty( $f['endpoint'] ) ? 1 : 0,
 				'maxlength'     => self::sanitize_number( $f, 'maxlength', true ),
 				'prepend'       => sanitize_text_field( isset( $f['prepend'] ) ? $f['prepend'] : '' ),
 				'append'        => sanitize_text_field( isset( $f['append'] ) ? $f['append'] : '' ),
@@ -398,6 +410,19 @@ class FCF_Fields {
 	 */
 	public static function render_field( $field, $value, $name, $id ) {
 		$field   = array_merge( self::defaults(), $field );
+
+		// A tab is a marker; fields.js turns the markers into tab navigation.
+		if ( 'tab' === $field['type'] ) {
+			printf(
+				'<div class="fcf-field fcf-type-tab" data-key="%s" data-type="tab" data-placement="%s" data-endpoint="%d" data-label="%s"></div>',
+				esc_attr( $field['key'] ),
+				'left' === $field['placement'] ? 'left' : 'top',
+				! empty( $field['endpoint'] ) ? 1 : 0,
+				esc_attr( '' !== $field['label'] ? $field['label'] : __( 'Tab', 'functional-custom-fields' ) )
+			);
+			return;
+		}
+
 		$classes = 'fcf-field fcf-type-' . $field['type'];
 		if ( ! empty( $field['required'] ) ) {
 			$classes .= ' is-required';
@@ -578,7 +603,11 @@ class FCF_Fields {
 				printf( '<input type="hidden" class="fcf-value" id="%s" name="%s" value="%s" />', esc_attr( $id ), esc_attr( $name ), $img_id ? esc_attr( $img_id ) : '' );
 				echo '<div class="fcf-image-preview">' . $preview . '</div>'; // wp_get_attachment_image() output is escaped.
 				printf(
-					'<p><button type="button" class="button fcf-image-select">%s</button> <button type="button" class="button-link fcf-media-remove">%s</button></p>',
+					'<span class="fcf-media-empty"><span class="dashicons dashicons-format-image" aria-hidden="true"></span>%s</span>',
+					esc_html__( 'No image selected', 'functional-custom-fields' )
+				);
+				printf(
+					'<p class="fcf-media-actions"><button type="button" class="button fcf-image-select">%s</button> <button type="button" class="button-link fcf-media-remove">%s</button></p>',
 					esc_html__( 'Select Image', 'functional-custom-fields' ),
 					esc_html__( 'Remove', 'functional-custom-fields' )
 				);
@@ -625,29 +654,60 @@ class FCF_Fields {
 			case 'repeater':
 				$rows = is_array( $value ) ? array_values( $value ) : array();
 				printf(
-					'<div class="fcf-repeater" data-key="%s" data-min="%d" data-max="%d">',
+					'<div class="fcf-repeater fcf-layout-%s" data-key="%s" data-min="%d" data-max="%d">',
+					esc_attr( in_array( $field['layout'], array( 'table', 'block', 'row' ), true ) ? $field['layout'] : 'table' ),
 					esc_attr( $field['key'] ),
 					(int) $field['min'],
 					(int) $field['max']
 				);
 				// Empty hidden input lets "all rows removed" be saved.
 				printf( '<input type="hidden" name="%s" value="" />', esc_attr( $name ) );
+				echo '<div class="fcf-repeater-table">';
+				if ( 'table' === $field['layout'] || ! in_array( $field['layout'], array( 'block', 'row' ), true ) ) {
+					self::render_row_head( $field );
+				}
 				echo '<div class="fcf-rows">';
 				foreach ( $rows as $i => $row ) {
 					self::render_row( $field, $row, $name, $id, $i );
 				}
+				echo '</div>';
+				printf( '<div class="fcf-rows-empty">%s</div>', esc_html__( 'No rows yet. Click "Add Row" to add the first one.', 'functional-custom-fields' ) );
 				echo '</div>';
 				// Row template; its placeholder index is never saved (non-numeric).
 				echo '<div class="fcf-row-template" hidden>';
 				self::render_row( $field, null, $name, $id, '__IDX_' . $field['key'] . '__' );
 				echo '</div>';
 				printf(
-					'<button type="button" class="button fcf-add-row">%s</button>',
+					'<div class="fcf-repeater-footer"><button type="button" class="button button-primary fcf-add-row"><span class="dashicons dashicons-plus-alt2" aria-hidden="true"></span>%s</button></div>',
 					esc_html( '' !== $field['button_label'] ? $field['button_label'] : __( 'Add Row', 'functional-custom-fields' ) )
 				);
 				echo '</div>';
 				break;
 		}
+	}
+
+	/**
+	 * Table header of a repeater: one column per sub field.
+	 */
+	protected static function render_row_head( $field ) {
+		echo '<div class="fcf-row-head" aria-hidden="true"><div class="fcf-row-handle"></div><div class="fcf-row-fields">';
+		foreach ( $field['sub_fields'] as $sub ) {
+			$sub = array_merge( self::defaults(), $sub );
+			if ( 'tab' === $sub['type'] ) {
+				continue;
+			}
+			printf(
+				'<div class="fcf-th"%s>%s%s',
+				'' !== $sub['wrapper_width'] ? sprintf( ' style="width:%s%%"', esc_attr( $sub['wrapper_width'] ) ) : '',
+				esc_html( $sub['label'] ),
+				! empty( $sub['required'] ) ? ' <span class="fcf-required">*</span>' : ''
+			);
+			if ( '' !== $sub['instructions'] ) {
+				printf( '<p class="description">%s</p>', nl2br( esc_html( $sub['instructions'] ) ) );
+			}
+			echo '</div>';
+		}
+		echo '</div><div class="fcf-row-actions"></div></div>';
 	}
 
 	/**
@@ -661,7 +721,12 @@ class FCF_Fields {
 			is_int( $index ) ? $index + 1 : ''
 		);
 		echo '<div class="fcf-row-fields">';
+		$is_table = ! in_array( $field['layout'], array( 'block', 'row' ), true );
 		foreach ( $field['sub_fields'] as $sub ) {
+			// Table columns cannot be split into tabs.
+			if ( $is_table && 'tab' === $sub['type'] ) {
+				continue;
+			}
 			$sub_value = is_array( $row ) && array_key_exists( $sub['name'], $row ) ? $row[ $sub['name'] ] : null;
 			self::render_field(
 				$sub,
@@ -752,6 +817,9 @@ class FCF_Fields {
 						}
 						$clean = array();
 						foreach ( $field['sub_fields'] as $sub ) {
+							if ( 'tab' === $sub['type'] ) {
+								continue;
+							}
 							$clean[ $sub['name'] ] = self::sanitize_value( $sub, isset( $row[ $sub['name'] ] ) ? $row[ $sub['name'] ] : '' );
 						}
 						$rows[] = $clean;
@@ -809,6 +877,9 @@ class FCF_Fields {
 				foreach ( is_array( $value ) ? $value : array() as $row ) {
 					$formatted = array();
 					foreach ( $field['sub_fields'] as $sub ) {
+						if ( 'tab' === $sub['type'] ) {
+							continue;
+						}
 						$formatted[ $sub['name'] ] = self::format_value( $sub, isset( $row[ $sub['name'] ] ) ? $row[ $sub['name'] ] : null );
 					}
 					$rows[] = $formatted;
